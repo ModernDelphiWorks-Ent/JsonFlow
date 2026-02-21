@@ -1,0 +1,67 @@
+﻿unit JsonFlow.FormatValidators.Email;
+
+interface
+
+uses
+  System.SysUtils,
+  System.RegularExpressions,
+  JsonFlow4D.FormatValidators.Base;
+
+type
+  TEmailFormatValidator = class(TBaseFormatValidatorPlugin)
+  protected
+    function DoValidate(const AValue: string): Boolean; override;
+    function GetCustomErrorMessage(const AValue: string): string; override;
+  public
+    constructor Create;
+  end;
+
+  // Função para registrar o validador
+  procedure RegisterEmailValidator;
+
+implementation
+
+uses
+  JsonFlow4D.FormatRegistry;
+
+{ TEmailFormatValidator }
+
+constructor TEmailFormatValidator.Create;
+begin
+  inherited Create('email', 'String does not match email format');
+end;
+
+function TEmailFormatValidator.DoValidate(const AValue: string): Boolean;
+var
+  LRegex: TRegEx;
+begin
+  if AValue.IsEmpty then
+  begin
+    Result := False;
+    Exit;
+  end;
+  
+  // Regex mais robusta para validação de email
+  LRegex := TRegEx.Create('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+  Result := LRegex.IsMatch(AValue);
+end;
+
+function TEmailFormatValidator.GetCustomErrorMessage(const AValue: string): string;
+begin
+  if AValue.IsEmpty then
+    Result := 'Email cannot be empty'
+  else if not AValue.Contains('@') then
+    Result := 'Email must contain @ symbol'
+  else if not AValue.Contains('.') then
+    Result := 'Email must contain a domain with extension'
+  else
+    Result := Format('String "%s" is not a valid email format', [AValue]);
+end;
+
+// Função para registrar o validador
+procedure RegisterEmailValidator;
+begin
+  TFormatRegistry.RegisterValidator('email', TEmailFormatValidator.Create);
+end;
+
+end.

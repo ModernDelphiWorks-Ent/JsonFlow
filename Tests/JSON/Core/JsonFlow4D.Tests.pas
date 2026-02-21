@@ -1,0 +1,527 @@
+﻿unit JsonFlow4D.Tests;
+
+interface
+
+uses
+  DUnitX.TestFramework,
+  Rtti,
+  System.Classes,
+  System.SysUtils,
+  System.DateUtils,
+  Variants,
+  JsonFlow,
+  JsonFlow4D.Utils,
+  JsonFlow4D.Interfaces,
+  JsonFlow4D.Navigator,
+  JsonFlow4D.MiddlewareDatatime,
+  Generics.Collections;
+
+type
+  TTestClass = class
+  private
+    FName: string;
+    FDate: TDateTime;
+  public
+    property Name: string read FName write FName;
+    property Date: TDateTime read FDate write FDate;
+  end;
+
+  TTestNestedArrayClass = class
+  private
+    FNestedScores: TArray<TArray<Double>>;
+  public
+    property NestedScores: TArray<TArray<Double>> read FNestedScores write FNestedScores;
+  end;
+
+  TTestSimpleClass = class
+  private
+    FName: String;
+    FAge: Integer;
+    FIsActive: Boolean;
+    FScore: Double;
+  public
+    property Name: String read FName write FName;
+    property Age: Integer read FAge write FAge;
+    property IsActive: Boolean read FIsActive write FIsActive;
+    property Score: Double read FScore write FScore;
+  end;
+
+  [TestFixture]
+  TJsonFlowTests = class(TObject)
+  public
+    [Test]
+    procedure TestParseSimpleJson;
+    [Test]
+    procedure TestParseNestedJson;
+    [Test]
+    procedure TestParseInvalidJsonRaisesException;
+    [Test]
+    procedure TestParseNullJsonRaisesException;
+    [Test]
+    procedure TestToJsonSimpleObject;
+    [Test]
+    procedure TestToJsonWithIndentation;
+    [Test]
+    procedure TestToJsonNullElement;
+    [Test]
+    procedure TestFromObjectSimple;
+    [Test]
+    procedure TestFromObjectWithClassName;
+    [Test]
+    procedure TestFromObjectNullRaisesException;
+    [Test]
+    procedure TestToObjectSimple;
+    [Test]
+    procedure TestToObjectNested;
+    [Test]
+    procedure TestToObjectNullElementRaisesException;
+    [Test]
+    procedure TestToObjectNullObjectRaisesException;
+    [Test]
+    procedure TestFullCycle;
+    [Test]
+    procedure TestObjectToJsonString;
+    [Test]
+    procedure TestObjectToJsonStringWithMiddleware;
+    [Test]
+    procedure TestJsonToObject;
+    [Test]
+    procedure TestJsonToObjectWithMiddleware;
+    [Test]
+    procedure TestObjectListToJsonString;
+    [Test]
+    procedure TestJsonToObjectList;
+    [Test]
+    procedure TestJsonToObjectWithTime;
+  end;
+
+implementation
+
+procedure TJsonFlowTests.TestParseSimpleJson;
+var
+  LJsonFlow: TJsonFlow;
+  LElement: IJSONElement;
+begin
+  LJsonFlow := TJsonFlow4D.Create;
+  try
+    LElement := LJsonFlow4D.Parse('{"nome":"Jo�o"}');
+    Assert.IsNotNull(LElement, 'Elemento n�o deve ser nulo');
+    Assert.IsTrue(Supports(LElement, IJSONObject), 'Tipo deve ser objeto');
+    Assert.AreEqual('Jo�o', ((LElement as IJSONObject).GetValue('nome') as IJSONValue).AsString, 'Valor de "nome" incorreto');
+  finally
+    LJsonFlow4D.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestParseNestedJson;
+var
+  LJsonFlow: TJsonFlow;
+  LElement: IJSONElement;
+  LInnerObj: IJSONElement;
+begin
+  LJsonFlow := TJsonFlow4D.Create;
+  try
+    LElement := LJsonFlow4D.Parse('{"pessoa":{"nome":"Jo�o"}}');
+    Assert.IsNotNull(LElement, 'Elemento n�o deve ser nulo');
+    Assert.IsTrue(Supports(LElement, IJSONObject), 'Tipo deve ser objeto');
+    LInnerObj := (LElement as IJSONObject).GetValue('pessoa');
+    Assert.IsNotNull(LInnerObj, 'Objeto "pessoa" n�o deve ser nulo');
+    Assert.IsTrue(Supports(LInnerObj, IJSONObject), 'Tipo deve ser objeto');
+    Assert.AreEqual('Jo�o', ((LInnerObj as IJSONObject).GetValue('nome') as IJSONValue).AsString, 'Valor de "nome" incorreto');
+  finally
+    LJsonFlow4D.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestParseInvalidJsonRaisesException;
+var
+  LJsonFlow: TJsonFlow;
+begin
+  LJsonFlow := TJsonFlow4D.Create;
+  try
+    Assert.WillRaise(
+      procedure
+      begin
+        LJsonFlow4D.Parse('{nome:"Jo�o"}'); // Chave sem aspas
+      end,
+      EInvalidOperation,
+      'Deve lan�ar exce��o para JSON inv�lido'
+    );
+  finally
+    LJsonFlow4D.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestParseNullJsonRaisesException;
+var
+  LJsonFlow: TJsonFlow;
+begin
+  LJsonFlow := TJsonFlow4D.Create;
+  try
+    Assert.WillRaise(
+      procedure
+      begin
+        LJsonFlow4D.Parse(''); // String vazia
+      end,
+      EInvalidOperation,
+      'Deve lan�ar exce��o para JSON vazio'
+    );
+  finally
+    LJsonFlow4D.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestToJsonSimpleObject;
+var
+  LJsonFlow: TJsonFlow;
+  LElement: IJSONElement;
+  LJson: string;
+begin
+  LJsonFlow := TJsonFlow4D.Create;
+  try
+    LElement := LJsonFlow4D.Parse('{"nome":"Jo�o"}');
+    LJson := LJsonFlow4D.ToJson(LElement);
+    Assert.AreEqual('{"nome":"Jo�o"}', LJson, 'JSON gerado incorreto');
+  finally
+    LJsonFlow4D.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestToJsonWithIndentation;
+var
+  LJsonFlow: TJsonFlow;
+  LElement: IJSONElement;
+  LJson: string;
+begin
+  LJsonFlow := TJsonFlow4D.Create;
+  try
+    LElement := LJsonFlow4D.Parse('{"nome":"Jo�o"}');
+    LJson := LJsonFlow4D.ToJson(LElement, True);
+    Assert.AreEqual('{'#13#10'  "nome": "Jo�o"'#13#10'}', LJson, 'JSON indentado incorreto');
+  finally
+    LJsonFlow4D.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestToJsonNullElement;
+var
+  LJsonFlow: TJsonFlow;
+  LJson: string;
+begin
+  LJsonFlow := TJsonFlow4D.Create;
+  try
+    LJson := LJsonFlow4D.ToJson(nil);
+    Assert.AreEqual('null', LJson, 'JSON para elemento nulo deve ser "null"');
+  finally
+    LJsonFlow4D.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestFromObjectSimple;
+var
+  LJsonFlow: TJsonFlow;
+  LObj: TTestSimpleClass;
+  LElement: IJSONElement;
+begin
+  LJsonFlow := TJsonFlow4D.Create;
+  try
+    LObj := TTestSimpleClass.Create;
+    try
+      LObj.Name := 'Jo�o';
+      LObj.Age := 30;
+      LElement := LJsonFlow4D.FromObject(LObj);
+      Assert.IsNotNull(LElement, 'Elemento n�o deve ser nulo');
+      Assert.IsTrue(Supports(LElement, IJSONObject), 'Tipo deve ser objeto');
+      Assert.AreEqual('Jo�o', ((LElement as IJSONObject).GetValue('Name') as IJSONValue).AsString, 'Valor de "Name" incorreto');
+      Assert.AreEqual(Int64(30), ((LElement as IJSONObject).GetValue('Age') as IJSONValue).AsInteger, 'Valor de "Age" incorreto');
+    finally
+      LObj.Free;
+    end;
+  finally
+    LJsonFlow4D.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestFromObjectWithClassName;
+var
+  LJsonFlow: TJsonFlow;
+  LObj: TTestSimpleClass;
+  LElement: IJSONElement;
+begin
+  LJsonFlow := TJsonFlow4D.Create;
+  try
+    LObj := TTestSimpleClass.Create;
+    try
+      LObj.Name := 'Jo�o';
+      LElement := LJsonFlow4D.FromObject(LObj, True);
+      Assert.IsNotNull(LElement, 'Elemento n�o deve ser nulo');
+      Assert.IsTrue(Supports(LElement, IJSONObject), 'Tipo deve ser objeto');
+      Assert.AreEqual('TTestSimpleClass', ((LElement as IJSONObject).GetValue('$class') as IJSONValue).AsString, 'Nome da classe incorreto');
+      Assert.AreEqual('Jo�o', ((LElement as IJSONObject).GetValue('Name') as IJSONValue).AsString, 'Valor de "Name" incorreto');
+    finally
+      LObj.Free;
+    end;
+  finally
+    LJsonFlow4D.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestFromObjectNullRaisesException;
+var
+  LJsonFlow: TJsonFlow;
+begin
+  LJsonFlow := TJsonFlow4D.Create;
+  try
+    Assert.WillRaise(
+      procedure
+      begin
+        LJsonFlow4D.FromObject(nil);
+      end,
+      EArgumentNilException,
+      'Deve lan�ar exce��o para objeto nulo'
+    );
+  finally
+    LJsonFlow4D.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestToObjectSimple;
+var
+  LJsonFlow: TJsonFlow;
+  LObj: TTestSimpleClass;
+  LElement: IJSONElement;
+begin
+  LJsonFlow := TJsonFlow4D.Create;
+  try
+    LObj := TTestSimpleClass.Create;
+    try
+      LElement := LJsonFlow4D.Parse('{"Name":"Jo�o","Age":30}');
+      Assert.IsTrue(LJsonFlow4D.ToObject(LElement, LObj), 'ToObject deve retornar True');
+      Assert.AreEqual('Jo�o', LObj.Name, 'Nome desserializado incorreto');
+      Assert.AreEqual(30, LObj.Age, 'Idade desserializada incorreta');
+    finally
+      LObj.Free;
+    end;
+  finally
+    LJsonFlow4D.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestToObjectNested;
+var
+  LJsonFlow: TJsonFlow;
+  LObj: TTestNestedArrayClass;
+  LElement: IJSONElement;
+begin
+  LObj := TTestNestedArrayClass.Create;
+  try
+    LJsonFlow := TJsonFlow4D.Create;
+    try
+      LJsonFlow4D.OnLog(procedure(AMessage: string)
+        begin
+          Writeln('LOG: ' + AMessage);
+        end);
+      LElement := LJsonFlow4D.Parse('{"NestedScores":[[95.5,88.0],[75.0,82.5]]}');
+      Assert.IsTrue(LJsonFlow4D.ToObject(LElement, LObj), 'ToObject deve retornar True');
+      Assert.AreEqual(2, Length(LObj.NestedScores), 'Tamanho do array externo NestedScores incorreto');
+      Assert.AreEqual(2, Length(LObj.NestedScores[0]), 'Tamanho do array interno NestedScores[0] incorreto');
+      Assert.AreEqual(Double(95.5), LObj.NestedScores[0][0], 'NestedScores[0][0] desserializado incorreto');
+      Assert.AreEqual(Double(88.0), LObj.NestedScores[0][1], 'NestedScores[0][1] desserializado incorreto');
+      Assert.AreEqual(Double(75.0), LObj.NestedScores[1][0], 'NestedScores[1][0] desserializado incorreto');
+      Assert.AreEqual(Double(82.5), LObj.NestedScores[1][1], 'NestedScores[1][1] desserializado incorreto');
+    finally
+      LJsonFlow4D.Free;
+    end;
+  finally
+    LObj.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestToObjectNullElementRaisesException;
+var
+  LJsonFlow: TJsonFlow;
+  LObj: TTestSimpleClass;
+begin
+  LJsonFlow := TJsonFlow4D.Create;
+  try
+    LObj := TTestSimpleClass.Create;
+    try
+      Assert.WillRaise(
+        procedure
+        begin
+          LJsonFlow4D.ToObject(nil, LObj);
+        end,
+        EArgumentNilException,
+        'Deve lan�ar exce��o para elemento nulo'
+      );
+    finally
+      LObj.Free;
+    end;
+  finally
+    LJsonFlow4D.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestToObjectNullObjectRaisesException;
+var
+  LJsonFlow: TJsonFlow;
+  LElement: IJSONElement;
+begin
+  LJsonFlow := TJsonFlow4D.Create;
+  try
+    LElement := LJsonFlow4D.Parse('{"Name":"Jo�o"}');
+    Assert.WillRaise(
+      procedure
+      begin
+        LJsonFlow4D.ToObject(LElement, nil);
+      end,
+      EArgumentNilException,
+      'Deve lan�ar exce��o para objeto nulo'
+    );
+  finally
+    LJsonFlow4D.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestFullCycle;
+var
+  LJsonFlow: TJsonFlow;
+  LObjIn, LObjOut: TTestSimpleClass;
+  LElement: IJSONElement;
+  LJson: string;
+begin
+  LJsonFlow := TJsonFlow4D.Create;
+  try
+    LObjIn := TTestSimpleClass.Create;
+    LObjOut := TTestSimpleClass.Create;
+    try
+      LObjIn.Name := 'Jo�o';
+      LObjIn.Age := 30;
+      LElement := LJsonFlow4D.FromObject(LObjIn);
+      LJson := LJsonFlow4D.ToJson(LElement);
+      LElement := LJsonFlow4D.Parse(LJson);
+      Assert.IsTrue(LJsonFlow4D.ToObject(LElement, LObjOut), 'ToObject deve retornar True');
+      Assert.AreEqual(LObjIn.Name, LObjOut.Name, 'Nome n�o preservado no ciclo');
+      Assert.AreEqual(LObjIn.Age, LObjOut.Age, 'Idade n�o preservada no ciclo');
+    finally
+      LObjOut.Free;
+      LObjIn.Free;
+    end;
+  finally
+    LJsonFlow4D.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestJsonToObject;
+var
+  LObj: TTestClass;
+begin
+  LObj := TJsonFlow4D.JsonToObject<TTestClass>('{"Name":"Jo�o","Date":"2025-03-08"}');
+  try
+    Assert.AreEqual('Jo�o', LObj.Name);
+    Assert.AreEqual(EncodeDate(2025, 3, 8), LObj.Date);
+  finally
+    LObj.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestJsonToObjectList;
+var
+  LList: TObjectList<TTestClass>;
+begin
+  LList := TJsonFlow4D.JsonToObjectList<TTestClass>('[{"Name":"Jo�o"},{"Name":"Maria"}]');
+  try
+    Assert.AreEqual(2, LList.Count);
+    Assert.AreEqual('Jo�o', LList[0].Name);
+    Assert.AreEqual('Maria', LList[1].Name);
+  finally
+    LList.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestJsonToObjectWithMiddleware;
+var
+  LObj: TTestClass;
+begin
+  TJsonFlow4D.AddMiddleware(TMiddlewareDateTime.Create(TJsonFlow4D.FormatSettings));
+  LObj := TJsonFlow4D.JsonToObject<TTestClass>('{"Name":"Jo�o","Date":"2025-03-08"}');
+  try
+    Assert.AreEqual('Jo�o', LObj.Name);
+    Assert.AreEqual(EncodeDate(2025, 3, 8), LObj.Date);
+  finally
+    LObj.Free;
+    TJsonFlow4D.ClearMiddlewares;
+  end;
+end;
+
+procedure TJsonFlowTests.TestObjectListToJsonString;
+const
+  CJSON = '[{"Name":"Jo�o","Date":"2025-03-09"},{"Name":"Maria","Date":""}]';
+var
+  LList: TObjectList<TTestClass>;
+begin
+  LList := TObjectList<TTestClass>.Create(True);
+  try
+    var LObj1 := TTestClass.Create;
+    LObj1.Name := 'Jo�o';
+    LObj1.Date := StrToDate('09/03/2025');
+    LList.Add(LObj1);
+
+    var LObj2 := TTestClass.Create;
+    LObj2.Name := 'Maria';
+    LList.Add(LObj2);
+
+    Assert.AreEqual(CJSON, TJsonFlow4D.ObjectListToJsonString(TObjectList<TObject>(LList)));
+  finally
+    LList.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestObjectToJsonString;
+var
+  LObj: TTestClass;
+begin
+  LObj := TTestClass.Create;
+  try
+    LObj.Name := 'Jo�o';
+    Assert.AreEqual('{"Name":"Jo�o","Date":""}', TJsonFlow4D.ObjectToJsonString(LObj));
+  finally
+    LObj.Free;
+  end;
+end;
+
+procedure TJsonFlowTests.TestObjectToJsonStringWithMiddleware;
+var
+  LObj: TTestClass;
+begin
+  TJsonFlow4D.AddMiddleware(TMiddlewareDateTime.Create(TJsonFlow4D.FormatSettings));
+  LObj := TTestClass.Create;
+  try
+    LObj.Name := 'Jo�o';
+    LObj.Date := EncodeDate(2025, 3, 8);
+    Assert.AreEqual('{"Name":"Jo�o","Date":"2025-03-08"}', TJsonFlow4D.ObjectToJsonString(LObj));
+  finally
+    LObj.Free;
+    TJsonFlow4D.ClearMiddlewares;
+  end;
+end;
+
+procedure TJsonFlowTests.TestJsonToObjectWithTime;
+var
+  LObj: TTestClass;
+begin
+  TJsonFlow4D.AddMiddleware(TMiddlewareDateTime.Create(TJsonFlow4D.FormatSettings));
+  LObj := TJsonFlow4D.JsonToObject<TTestClass>('{"Name":"Jo�o","Date":"2025-03-08T14:30:00"}');
+  try
+    Assert.AreEqual('Jo�o', LObj.Name);
+    Assert.AreEqual(EncodeDateTime(2025, 3, 8, 14, 30, 0, 0), LObj.Date);
+  finally
+    LObj.Free;
+  end;
+end;
+
+initialization
+  TDUnitX.RegisterTestFixture(TJsonFlowTests);
+
+end.
+
