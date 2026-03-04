@@ -1,11 +1,11 @@
-﻿unit JsonFlow4D.TestsSchemaNavigator;
+﻿unit JsonFlow.TestsSchemaNavigator;
 
 interface
 
 uses
   DUnitX.TestFramework,
-  JsonFlow4D.SchemaNavigator,
-  JsonFlow4D.SchemaReader;
+  JsonFlow.SchemaNavigator,
+  JsonFlow.SchemaReader;
 
 type
   [TestFixture]
@@ -50,7 +50,7 @@ uses
   System.SysUtils,
   System.Classes,
   System.IOUtils,
-  JsonFlow4D.Interfaces;
+  JsonFlow.Interfaces;
 
 procedure TJSONSchemaNavigatorTests.Setup;
 begin

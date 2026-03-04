@@ -1,11 +1,25 @@
-﻿unit JsonFlow.ValidationRules.MinProperties;
+﻿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
+unit JsonFlow.ValidationRules.MinProperties;
 
 interface
 
 uses
   System.SysUtils, System.Classes,
-  JsonFlow4D.Interfaces, JsonFlow4D.ValidationEngine,
-  JsonFlow4D.ValidationRules.Base;
+  JsonFlow.Interfaces, JsonFlow.ValidationEngine,
+  JsonFlow.ValidationRules.Base;
 
 type
   // Regra de validação de número mínimo de propriedades em objeto

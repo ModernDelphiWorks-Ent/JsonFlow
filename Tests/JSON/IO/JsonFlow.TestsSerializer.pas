@@ -1,15 +1,15 @@
-﻿unit JsonFlow4D.TestsSerializer;
+﻿unit JsonFlow.TestsSerializer;
 
 interface
 
 uses
   DUnitX.TestFramework,
   System.SysUtils,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.Value,
-  JsonFlow4D.Objects,
-  JsonFlow4D.Arrays,
-  JsonFlow4D.Serializer;
+  JsonFlow.Interfaces,
+  JsonFlow.Value,
+  JsonFlow.Objects,
+  JsonFlow.Arrays,
+  JsonFlow.Serializer;
 
 type
   TTestNestedArrayClass = class

@@ -1,4 +1,18 @@
-﻿unit JsonFlow.Composer.Pool;
+﻿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
+unit JsonFlow.Composer.Pool;
 
 interface
 
@@ -7,7 +21,7 @@ uses
   System.Classes,
   System.Generics.Collections,
   System.SyncObjs,
-  JsonFlow4D.Interfaces;
+  JsonFlow.Interfaces;
 
 type
   // Pool Statistics
@@ -85,7 +99,7 @@ type
 implementation
 
 uses
-  JsonFlow4D.Composer; // Agora podemos usar sem dependência circular
+  JsonFlow.Composer; // Agora podemos usar sem dependência circular
 
 // TPoolConfiguration
 class function TPoolConfiguration.Default: TPoolConfiguration;

@@ -1,3 +1,17 @@
+﻿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
 unit JsonFlow.Composer.Enhanced;
 
 interface
@@ -8,7 +22,7 @@ uses
   System.Generics.Collections,
   System.SyncObjs,
   System.Variants,
-  JsonFlow4D.Interfaces;
+  JsonFlow.Interfaces;
 
 type
 
@@ -174,7 +188,7 @@ implementation
 
 uses
   System.DateUtils,
-  JsonFlow4D.Composer;
+  JsonFlow.Composer;
 
 // Note: TJSONComposer is forward declared in interface section
 

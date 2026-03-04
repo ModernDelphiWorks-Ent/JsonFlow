@@ -1,3 +1,17 @@
+﻿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
 unit JsonFlow.Objects;
 
 interface
@@ -6,8 +20,8 @@ uses
   System.SysUtils,
   System.Classes,
   System.Generics.Collections,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.Pair;
+  JsonFlow.Interfaces,
+  JsonFlow.Pair;
 
 type
   TJSONObject = class(TInterfacedObject, IJSONElement, IJSONObject)

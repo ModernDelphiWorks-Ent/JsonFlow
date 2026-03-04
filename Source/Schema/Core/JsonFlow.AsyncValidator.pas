@@ -1,4 +1,18 @@
-﻿unit JsonFlow.AsyncValidator;
+﻿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
+unit JsonFlow.AsyncValidator;
 
 {
   JsonFlow4D - Sistema de Validação Assíncrona
@@ -27,9 +41,9 @@ uses
   System.Generics.Collections,
   System.SyncObjs,
   System.Threading,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.SchemaValidator,
-  JsonFlow4D.Reader;
+  JsonFlow.Interfaces,
+  JsonFlow.SchemaValidator,
+  JsonFlow.Reader;
 
 type
   // Prioridade da tarefa de validação
@@ -202,7 +216,7 @@ implementation
 uses
   System.DateUtils,
   System.Math,
-  JsonFlow4D.Objects;
+  JsonFlow.Objects;
 
 { TValidationTask }
 

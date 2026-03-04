@@ -1,18 +1,32 @@
+ï»¿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
 unit JsonFlow.PersistentCache;
 
 {
   JsonFlow4D - Sistema de Cache Persistente
   
   Este arquivo implementa um sistema de cache persistente que permite
-  armazenar resultados de validação em disco para reutilização entre
-  sessões da aplicação.
+  armazenar resultados de validaÃ§Ã£o em disco para reutilizaÃ§Ã£o entre
+  sessÃµes da aplicaÃ§Ã£o.
   
   Funcionalidades:
   - Cache baseado em hash do schema e dados
-  - Persistência em arquivo JSON
-  - Expiração automática de entradas antigas
+  - PersistÃªncia em arquivo JSON
+  - ExpiraÃ§Ã£o automÃ¡tica de entradas antigas
   - Thread-safety
-  - Compressão opcional
+  - CompressÃ£o opcional
   
   Autor: JsonFlow4D Framework
   Data: 2024
@@ -21,20 +35,20 @@ unit JsonFlow.PersistentCache;
 interface
 
 uses
-  System.SysUtils,
-  System.Classes,
-  System.Generics.Collections,
-  System.SyncObjs,
-  System.DateUtils,
-  System.Hash,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.Reader,
-  JsonFlow4D.Composer,
-  JsonFlow4D.Objects,
-  JsonFlow4D.Arrays,
-  JsonFlow4D.Value,
-  JsonFlow4D.Serializer,
-  JsonFlow4D.Utils;
+  SysUtils,
+  Classes,
+  Generics.Collections,
+  SyncObjs,
+  DateUtils,
+  Hash,
+  JsonFlow.Interfaces,
+  JsonFlow.Reader,
+  JsonFlow.Composer,
+  JsonFlow.Objects,
+  JsonFlow.Arrays,
+  JsonFlow.Value,
+  JsonFlow.Serializer,
+  JsonFlow.Utils;
 
 type
   // Entrada do cache persistente
@@ -47,7 +61,7 @@ type
     AccessCount: Integer;
   end;
 
-  // Configurações do cache
+  // ConfiguraÃ§Ãµes do cache
   TCacheConfig = record
     MaxEntries: Integer;
     ExpirationDays: Integer;
@@ -70,8 +84,8 @@ type
     function GenerateHash(const ASchema, AData: string): string;
     procedure LoadFromFile;
     procedure SaveToFile;
-    procedure LoadFromFileAlternative; // Método alternativo usando TJSONSerializer
-    procedure SaveToFileAlternative;   // Método alternativo usando TJSONSerializer
+    procedure LoadFromFileAlternative; // MÃ©todo alternativo usando TJSONSerializer
+    procedure SaveToFileAlternative;   // MÃ©todo alternativo usando TJSONSerializer
     procedure CleanupExpiredEntries;
     function ShouldAutoSave: Boolean;
     
@@ -79,7 +93,7 @@ type
     constructor Create(const AConfig: TCacheConfig);
     destructor Destroy; override;
     
-    // Operações do cache
+    // OperaÃ§Ãµes do cache
     function TryGetValidation(const ASchema, AData: string; out AIsValid: Boolean; out AErrorCount: Integer): Boolean;
     procedure StoreValidation(const ASchema, AData: string; AIsValid: Boolean; AErrorCount: Integer);
     
@@ -88,13 +102,13 @@ type
     procedure Flush;
     procedure Cleanup;
     
-    // Estatísticas
+    // EstatÃ­sticas
     function GetCacheSize: Integer;
     function GetHitRate: Double;
     function GetOldestEntry: TDateTime;
     function GetNewestEntry: TDateTime;
     
-    // Configuração
+    // ConfiguraÃ§Ã£o
     property Config: TCacheConfig read FConfig write FConfig;
   end;
 
@@ -168,10 +182,10 @@ begin
   try
     if FCacheEntries.TryGetValue(LHash, LEntry) then
     begin
-      // Verificar se não expirou
+      // Verificar se nÃ£o expirou
       if DaysBetween(Now, LEntry.CreatedAt) <= FConfig.ExpirationDays then
       begin
-        // Atualizar estatísticas de acesso
+        // Atualizar estatÃ­sticas de acesso
         LEntry.LastAccessed := Now;
         LEntry.AccessCount := LEntry.AccessCount + 1;
         FCacheEntries.AddOrSetValue(LHash, LEntry);
@@ -192,7 +206,7 @@ begin
     FLock.Leave;
   end;
   
-  // Auto-save se necessário
+  // Auto-save se necessÃ¡rio
   if FConfig.AutoSave and ShouldAutoSave then
     SaveToFile;
 end;
@@ -223,7 +237,7 @@ begin
     FLock.Leave;
   end;
   
-  // Auto-save se necessário
+  // Auto-save se necessÃ¡rio
   if FConfig.AutoSave and ShouldAutoSave then
     SaveToFile;
 end;
@@ -263,7 +277,7 @@ begin
       try
         LJsonElement := LJsonReader.Read(LJsonText);
         
-        // Verificar se é um objeto JSON
+        // Verificar se Ã© um objeto JSON
         if Supports(LJsonElement, IJSONObject, LJsonObject) then
         begin
           if LJsonObject.ContainsKey('entries') then
@@ -305,7 +319,7 @@ begin
       FLock.Leave;
     end;
   except
-    // Ignorar erros de carregamento - cache será recriado
+    // Ignorar erros de carregamento - cache serÃ¡ recriado
   end;
 end;
 
@@ -353,7 +367,7 @@ begin
         LJsonComposer.Free;
       end;
       
-      // Criar diretório se não existir
+      // Criar diretÃ³rio se nÃ£o existir
       ForceDirectories(ExtractFilePath(FConfig.CacheFilePath));
       
       // Usar TStringList para salvar com encoding correto
@@ -375,7 +389,7 @@ begin
   end;
 end;
 
-// Método alternativo usando TJSONSerializer - mais robusto
+// MÃ©todo alternativo usando TJSONSerializer - mais robusto
 procedure TPersistentCache.LoadFromFileAlternative;
 var
   LStringList: TStringList;
@@ -421,7 +435,7 @@ begin
                 LJsonElement := LEntriesArray.GetItem(I);
                 if Supports(LJsonElement, IJSONObject, LEntryObject) then
                 begin
-                  // Usar valores padrão se as chaves não existirem
+                  // Usar valores padrÃ£o se as chaves nÃ£o existirem
                   LEntry.Hash := '';
                   LEntry.IsValid := False;
                   LEntry.ErrorCount := 0;
@@ -456,11 +470,11 @@ begin
       FLock.Leave;
     end;
   except
-    // Ignorar erros de carregamento - cache será recriado
+    // Ignorar erros de carregamento - cache serÃ¡ recriado
   end;
 end;
 
-// Método alternativo usando TJSONComposer - mais eficiente
+// MÃ©todo alternativo usando TJSONComposer - mais eficiente
 procedure TPersistentCache.SaveToFileAlternative;
 var
   LStringList: TStringList;
@@ -680,7 +694,7 @@ begin
     try
       if not Assigned(FInstance) then
       begin
-        // Configuração padrão
+        // ConfiguraÃ§Ã£o padrÃ£o
         LConfig.MaxEntries := 10000;
         LConfig.ExpirationDays := 30;
         LConfig.CacheFilePath := ExtractFilePath(ParamStr(0)) + 'jsonflow_cache.json';

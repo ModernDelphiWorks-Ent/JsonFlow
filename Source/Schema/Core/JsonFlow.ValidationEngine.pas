@@ -1,4 +1,18 @@
-﻿unit JsonFlow.ValidationEngine;
+﻿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
+unit JsonFlow.ValidationEngine;
 
 interface
 
@@ -6,12 +20,12 @@ uses
   System.SysUtils,
   System.Classes,
   System.Generics.Collections,
-  JsonFlow4D.Interfaces;
+  JsonFlow.Interfaces;
 
 type
-  // Usar TRuleType, TValidationStatus, TValidationResult e TValidationError de JsonFlow4D.Interfaces
+  // Usar TRuleType, TValidationStatus, TValidationResult e TValidationError de JsonFlow.Interfaces
 
-  // Interface base para regras de valida��o
+  // Interface base para regras de valida??o
   IValidationRule = interface
     ['{B3C1CC08-4573-4816-9718-09EAB8B5D8EF}']
     function GetRuleType: TRuleType;
@@ -19,13 +33,13 @@ type
     function Validate(const AValue: IJSONElement; const AContext: TObject): TValidationResult;
   end;
 
-  // Interface para resolver refer�ncias $ref
+  // Interface para resolver refer?ncias $ref
   ISchemaCompiler = interface
     ['{C32A604E-3A2B-40BD-A88E-5D61E9361C50}']
     function ResolveReference(const ARefPath: string): IJSONElement;
   end;
 
-  // Contexto de valida��o simplificado
+  // Contexto de valida??o simplificado
   TValidationContext = class
   private
     FSchema: IJSONElement;
@@ -46,7 +60,7 @@ type
     property Resolver: ISchemaCompiler read FResolver write FResolver;
   end;
 
-// Fun��es auxiliares
+// Fun??es auxiliares
 function EscapeJSONPointer(const AValue: string): string;
 function CreateValidationError(const APath, AMessage, AFound, AExpected, AKeyword: string; const ASchemaPath: string = ''): TValidationError;
 procedure AddErrorToResult(var AResult: TValidationResult; const AError: TValidationError);
@@ -69,7 +83,7 @@ end;
 destructor TValidationContext.Destroy;
 begin
   FResolver := nil;
-  FParent := nil; // Evitar refer�ncia circular
+  FParent := nil; // Evitar refer?ncia circular
   inherited Destroy;
 end;
 
@@ -83,7 +97,7 @@ begin
     // Usar formato JSON Pointer padrão com separador '/'
     Result := Result + '/' + FPathStack[LFor];
   end;
-  
+
   // Se o resultado estiver vazio, retornar a raiz JSON Pointer
   if Result = '' then
     Result := '/';
@@ -115,7 +129,7 @@ begin
     SetLength(FPathStack, Length(FPathStack) - 1);
 end;
 
-{ Fun��es auxiliares }
+{ Fun??es auxiliares }
 
 function EscapeJSONPointer(const AValue: string): string;
 begin
@@ -151,7 +165,7 @@ function CombineResults(const AResult1, AResult2: TValidationResult): TValidatio
 begin
   Result := AResult1;
   Result.IsValid := AResult1.IsValid and AResult2.IsValid;
-  
+
   if Length(AResult2.Errors) > 0 then
   begin
     // Adicionar erros do segundo resultado

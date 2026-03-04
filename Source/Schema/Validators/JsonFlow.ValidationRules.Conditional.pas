@@ -1,21 +1,35 @@
+Ôªø{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
 unit JsonFlow.ValidationRules.Conditional;
 
 interface
 
 uses
   System.SysUtils, System.Classes, System.Generics.Collections,
-  JsonFlow4D.Interfaces, JsonFlow4D.ValidationEngine,
-  JsonFlow4D.ValidationRules.Base,
-  JsonFlow4D.ValidationRules.Required,
-  JsonFlow4D.ValidationRules.Properties,
-  JsonFlow4D.ValidationRules.MinLength,
-  JsonFlow4D.ValidationRules.MaxLength,
-  JsonFlow4D.ValidationRules.Minimum,
-  JsonFlow4D.ValidationRules.Maximum,
-  JsonFlow4D.ValidationRules.Consts;
+  JsonFlow.Interfaces, JsonFlow.ValidationEngine,
+  JsonFlow.ValidationRules.Base,
+  JsonFlow.ValidationRules.Required,
+  JsonFlow.ValidationRules.Properties,
+  JsonFlow.ValidationRules.MinLength,
+  JsonFlow.ValidationRules.MaxLength,
+  JsonFlow.ValidationRules.Minimum,
+  JsonFlow.ValidationRules.Maximum,
+  JsonFlow.ValidationRules.Consts;
 
 type
-  // Regra de validaÁ„o condicional if/then/else
+  // Regra de valida√ß√£o condicional if/then/else
   TConditionalRule = class(TBaseValidationRule)
   private
     FIfSchema: IJSONElement;
@@ -30,7 +44,7 @@ type
 implementation
 
 uses
-  JsonFlow4D.ValidationRules.Types;
+  JsonFlow.ValidationRules.Types;
 
 { TConditionalRule }
 
@@ -243,12 +257,12 @@ var
 begin
   LValidationContext := TValidationContext(AContext);
   
-  // Avaliar a condiÁ„o 'if'
+  // Avaliar a condi√ß√£o 'if'
   LIfResult := ValidateAgainstSchema(AValue, FIfSchema, LValidationContext);
   
   if LIfResult.IsValid then
   begin
-    // Se 'if' È v·lido, aplicar 'then' se existir
+    // Se 'if' √© v√°lido, aplicar 'then' se existir
     if Assigned(FThenSchema) then
     begin
       LThenResult := ValidateAgainstSchema(AValue, FThenSchema, LValidationContext);
@@ -256,13 +270,13 @@ begin
     end
     else
     begin
-      // Se n„o h· 'then', considera v·lido
+      // Se n√£o h√° 'then', considera v√°lido
       Result := TValidationResult.Success(LValidationContext.GetFullPath);
     end;
   end
   else
   begin
-    // Se 'if' È inv·lido, aplicar 'else' se existir
+    // Se 'if' √© inv√°lido, aplicar 'else' se existir
     if Assigned(FElseSchema) then
     begin
       LElseResult := ValidateAgainstSchema(AValue, FElseSchema, LValidationContext);
@@ -270,7 +284,7 @@ begin
     end
     else
     begin
-      // Se n„o h· 'else', considera v·lido
+      // Se n√£o h√° 'else', considera v√°lido
       Result := TValidationResult.Success(LValidationContext.GetFullPath);
     end;
   end;

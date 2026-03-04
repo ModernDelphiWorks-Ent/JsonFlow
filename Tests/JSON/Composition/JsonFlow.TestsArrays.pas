@@ -1,4 +1,4 @@
-﻿unit JsonFlow4D.TestsArrays;
+﻿unit JsonFlow.TestsArrays;
 
 interface
 
@@ -6,9 +6,9 @@ uses
   System.SysUtils,
   System.Classes,
   DUnitX.TestFramework,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.Value,
-  JsonFlow4D.Arrays;
+  JsonFlow.Interfaces,
+  JsonFlow.Value,
+  JsonFlow.Arrays;
 
 type
   [TestFixture]

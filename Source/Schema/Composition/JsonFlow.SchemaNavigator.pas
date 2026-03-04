@@ -1,3 +1,17 @@
+ï»¿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
 unit JsonFlow.SchemaNavigator;
 
 interface
@@ -8,8 +22,8 @@ uses
   System.SysUtils,
   System.StrUtils,
   System.Generics.Collections,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.Reader;
+  JsonFlow.Interfaces,
+  JsonFlow.Reader;
 
 type
   TJSONSchemaNavigator = class
@@ -54,7 +68,7 @@ begin
   FRoot := ARoot;
   FExternalSchemas := TDictionary<String, IJSONElement>.Create;
   FVisitedRefs := TStringList.Create;
-  FMaxDepth := 100; // Limite padrão de 100 níveis
+  FMaxDepth := 100; // Limite padrÃ£o de 100 nÃ­veis
   FCurrentDepth := 0;
 end;
 
@@ -325,7 +339,7 @@ function TJSONSchemaNavigator._ResolveRefSafe(const ARef: String; const ABasePat
 begin
   Result := nil;
   
-  // Verificar referência circular
+  // Verificar referÃªncia circular
   if _IsCircularReference(ARef) then
   begin
     _Log('Circular reference detected: ' + ARef);
@@ -339,12 +353,12 @@ begin
     Exit;
   end;
   
-  // Adicionar à lista de visitados e incrementar profundidade
+  // Adicionar Ã  lista de visitados e incrementar profundidade
   FVisitedRefs.Add(ARef);
   Inc(FCurrentDepth);
   
   try
-    // Resolver a referência usando o método original
+    // Resolver a referÃªncia usando o mÃ©todo original
     Result := _ResolveRef(ARef, ABasePath);
   finally
     // Remover da lista de visitados e decrementar profundidade

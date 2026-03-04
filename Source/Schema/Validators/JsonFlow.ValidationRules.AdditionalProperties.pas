@@ -1,3 +1,17 @@
+Ôªø{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
 unit JsonFlow.ValidationRules.AdditionalProperties;
 
 interface
@@ -6,12 +20,12 @@ uses
   System.SysUtils,
   System.Classes,
   System.Generics.Collections,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.ValidationEngine,
-  JsonFlow4D.ValidationRules.Base;
+  JsonFlow.Interfaces,
+  JsonFlow.ValidationEngine,
+  JsonFlow.ValidationRules.Base;
 
 type
-  // Regra de validaÁ„o de propriedades adicionais
+  // Regra de valida√ß√£o de propriedades adicionais
   TAdditionalPropertiesRule = class(TBaseValidationRule)
   private
     FAllowAdditional: Boolean;
@@ -73,7 +87,7 @@ begin
     begin
       LPropertyName := LPairs[LFor].Key;
       
-      // Verificar se È uma propriedade definida no esquema
+      // Verificar se √© uma propriedade definida no esquema
       LIsDefinedProperty := False;
       for LDefinedProp in FDefinedProperties do
       begin
@@ -84,12 +98,12 @@ begin
         end;
       end;
       
-      // Se n„o È uma propriedade definida, È uma propriedade adicional
+      // Se n√£o √© uma propriedade definida, √© uma propriedade adicional
       if not LIsDefinedProperty then
       begin
         if not FAllowAdditional then
         begin
-          // Propriedades adicionais n„o s„o permitidas
+          // Propriedades adicionais n√£o s√£o permitidas
           LHasErrors := True;
           LError := CreateValidationError(
             LValidationContext.GetFullPath + '.' + LPropertyName,
@@ -106,9 +120,9 @@ begin
           LPropertyValue := LObject.GetValue(LPropertyName);
           LValidationContext.PushProperty(LPropertyName);
           try
-            // Aqui seria necess·rio validar usando o esquema adicional
-            // Por simplicidade, assumimos que a validaÁ„o È bem-sucedida
-            // Em uma implementaÁ„o completa, seria necess·rio um validador recursivo
+            // Aqui seria necess√°rio validar usando o esquema adicional
+            // Por simplicidade, assumimos que a valida√ß√£o √© bem-sucedida
+            // Em uma implementa√ß√£o completa, seria necess√°rio um validador recursivo
           finally
             LValidationContext.PopProperty;
           end;

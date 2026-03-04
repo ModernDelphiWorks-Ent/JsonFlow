@@ -1,14 +1,15 @@
-﻿unit JsonFlow4D.TestsPerformanceOptimizations;
+﻿unit JsonFlow.TestsPerformanceOptimizations;
 
 interface
 
 uses
-  System.SysUtils,
-  System.Diagnostics,
-  System.Generics.Collections,
-  JsonFlow4D.Objects,
-  JsonFlow4D.SchemaValidator,
-  JsonFlow4D.ErrorListPool;
+  SysUtils,
+  Diagnostics,
+  Generics.Collections,
+  JSonFlow.Interfaces,
+  JsonFlow.Objects,
+  JsonFlow.SchemaValidator,
+  JsonFlow.ErrorListPool;
 
 type
   TPerformanceTest = class
@@ -35,8 +36,8 @@ implementation
 
 constructor TPerformanceTest.Create;
 begin
-  FValidator := TJSONSchemaValidator.Create(jsvDraft7, nil);
-  FValidator.LogLevel := llError; // Reduzir logging para testes de performance
+  FValidator := TJSONSchemaValidator.Create(jsvDraft7);
+//  FValidator.LogLevel := llError; // Reduzir logging para testes de performance
   FStopwatch := TStopwatch.Create;
 end;
 
@@ -71,9 +72,9 @@ begin
     LList2 := LPool.GetList;
     
     // Simular uso das listas
-    LList1.Add(TValidationError.Create('test', 'Test error 1'));
-    LList2.Add(TValidationError.Create('test', 'Test error 2'));
-    
+//    LList1.Add(TValidationError.Create('test', 'Test error 1'));
+//    LList2.Add(TValidationError.Create('test', 'Test error 2'));
+
     // Retornar ao pool
     LPool.ReturnList(LList1);
     LPool.ReturnList(LList2);
@@ -116,32 +117,20 @@ var
 const
   ITERATIONS = 1000;
 begin
-  LSchema := '{
-' +
-    '  "type": "object",
-' +
-    '  "properties": {
-' +
-    '    "name": { "type": "string" },
-' +
-    '    "age": { "type": "integer", "minimum": 0 },
-' +
-    '    "email": { "type": "string", "format": "email" }
-' +
-    '  },
-' +
-    '  "required": ["name", "age"]
-' +
+  LSchema := '{' +
+    '  "type": "object",' +
+    '  "properties": {' +
+    '    "name": { "type": "string" },' +
+    '    "age": { "type": "integer", "minimum": 0 },' +
+    '    "email": { "type": "string", "format": "email" }' +
+    '  },' +
+    '  "required": ["name", "age"]' +
     '}';
-    
-  LData := '{
-' +
-    '  "name": "John Doe",
-' +
-    '  "age": 30,
-' +
-    '  "email": "john@example.com"
-' +
+
+  LData := '{' +
+    '  "name": "John Doe",' +
+    '  "age": 30,' +
+    '  "email": "john@example.com"' +
     '}';
 
   LMemBefore := GetHeapStatus.TotalAllocated;
@@ -150,7 +139,7 @@ begin
   for I := 1 to ITERATIONS do
   begin
     FValidator.Validate(LData, LSchema);
-    FValidator.ClearParsingCache; // Limpar cache entre validações
+//    FValidator.ClearParsingCache; // Limpar cache entre validações
   end;
   
   FStopwatch.Stop;
@@ -166,99 +155,59 @@ var
   LSchema, LData: String;
   LMemBefore, LMemAfter: Int64;
 begin
-  LSchema := '{
-' +
-    '  "$defs": {
-' +
-    '    "person": {
-' +
-    '      "type": "object",
-' +
-    '      "properties": {
-' +
-    '        "name": { "type": "string" },
-' +
-    '        "age": { "type": "integer" },
-' +
-    '        "address": { "$ref": "#/$defs/address" }
-' +
-    '      }
-' +
-    '    },
-' +
-    '    "address": {
-' +
-    '      "type": "object",
-' +
-    '      "properties": {
-' +
-    '        "street": { "type": "string" },
-' +
-    '        "city": { "type": "string" },
-' +
-    '        "country": { "type": "string" }
-' +
-    '      }
-' +
-    '    }
-' +
-    '  },
-' +
-    '  "type": "array",
-' +
-    '  "items": { "$ref": "#/$defs/person" }
-' +
+  LSchema := '{' +
+    '  "$defs": {' +
+    '    "person": {' +
+    '      "type": "object",' +
+    '      "properties": {' +
+    '        "name": { "type": "string" },' +
+    '        "age": { "type": "integer" },' +
+    '        "address": { "$ref": "#/$defs/address" }' +
+    '      }' +
+    '    },' +
+    '    "address": {' +
+    '      "type": "object",' +
+    '      "properties": {' +
+    '        "street": { "type": "string" },' +
+    '        "city": { "type": "string" },' +
+    '        "country": { "type": "string" }' +
+    '      }' +
+    '    }' +
+    '  },' +
+    '  "type": "array",' +
+    '  "items": { "$ref": "#/$defs/person" }' +
     '}';
-    
-  LData := '[
-' +
-    '  {
-' +
-    '    "name": "Alice",
-' +
-    '    "age": 25,
-' +
-    '    "address": {
-' +
-    '      "street": "123 Main St",
-' +
-    '      "city": "New York",
-' +
-    '      "country": "USA"
-' +
-    '    }
-' +
-    '  },
-' +
-    '  {
-' +
-    '    "name": "Bob",
-' +
-    '    "age": 30,
-' +
-    '    "address": {
-' +
-    '      "street": "456 Oak Ave",
-' +
-    '      "city": "Los Angeles",
-' +
-    '      "country": "USA"
-' +
-    '    }
-' +
-    '  }
-' +
+
+  LData := '[' +
+    '  {' +
+    '    "name": "Alice",' +
+    '    "age": 25,' +
+    '    "address": {' +
+    '      "street": "123 Main St",' +
+    '      "city": "New York",' +
+    '      "country": "USA"' +
+    '    }' +
+    '  },' +
+    '  {' +
+    '    "name": "Bob",' +
+    '    "age": 30,' +
+    '    "address": {' +
+    '      "street": "456 Oak Ave",' +
+    '      "city": "Los Angeles",' +
+    '      "country": "USA"' +
+    '    }' +
+    '  }' +
     ']';
 
   LMemBefore := GetHeapStatus.TotalAllocated;
   FStopwatch.Start;
-  
+
   FValidator.Validate(LData, LSchema);
-  
+
   FStopwatch.Stop;
   LMemAfter := GetHeapStatus.TotalAllocated;
-  
-  LogResult('Complex Schema with References', 
+
+  LogResult('Complex Schema with References',
            FStopwatch.ElapsedMilliseconds, LMemAfter - LMemBefore);
   FStopwatch.Reset;
 end;
@@ -269,70 +218,39 @@ var
   LMemBefore, LMemAfter: Int64;
 begin
   // Schema com referência circular potencial
-  LSchema := '{
-' +
-    '  "$defs": {
-' +
-    '    "node": {
-' +
-    '      "type": "object",
-' +
-    '      "properties": {
-' +
-    '        "value": { "type": "string" },
-' +
-    '        "children": {
-' +
-    '          "type": "array",
-' +
-    '          "items": { "$ref": "#/$defs/node" }
-' +
-    '        }
-' +
-    '      }
-' +
-    '    }
-' +
-    '  },
-' +
-    '  "$ref": "#/$defs/node"
-' +
+  LSchema := '{' +
+    '  "$defs": {' +
+    '    "node": {' +
+    '      "type": "object",' +
+    '      "properties": {' +
+    '        "value": { "type": "string" },' +
+    '        "children": {' +
+    '          "type": "array",' +
+    '          "items": { "$ref": "#/$defs/node" }' +
+    '        }' +
+    '      }' +
+    '    }' +
+    '  },' +
+    '  "$ref": "#/$defs/node"' +
     '}';
-    
-  LData := '{
-' +
-    '  "value": "root",
-' +
-    '  "children": [
-' +
-    '    {
-' +
-    '      "value": "child1",
-' +
-    '      "children": []
-' +
-    '    },
-' +
-    '    {
-' +
-    '      "value": "child2",
-' +
-    '      "children": [
-' +
-    '        {
-' +
-    '          "value": "grandchild",
-' +
-    '          "children": []
-' +
-    '        }
-' +
-    '      ]
-' +
-    '    }
-' +
-    '  ]
-' +
+
+  LData := '{' +
+    '  "value": "root",' +
+    '  "children": [' +
+    '    {' +
+    '      "value": "child1",' +
+    '      "children": []' +
+    '    },' +
+    '    {' +
+    '      "value": "child2",' +
+    '      "children": [' +
+    '        {' +
+    '          "value": "grandchild",' +
+    '          "children": []' +
+    '        }' +
+    '      ]' +
+    '    }' +
+    '  ]' +
     '}';
 
   LMemBefore := GetHeapStatus.TotalAllocated;
@@ -356,18 +274,12 @@ var
 const
   BATCH_SIZE = 100;
 begin
-  LSchema := '{
-' +
-    '  "type": "object",
-' +
-    '  "properties": {
-' +
-    '    "id": { "type": "integer" },
-' +
-    '    "data": { "type": "string" }
-' +
-    '  }
-' +
+  LSchema := '{' +
+    '  "type": "object",' +
+    '  "properties": {' +
+    '    "id": { "type": "integer" },' +
+    '    "data": { "type": "string" }' +
+    '  }' +
     '}';
 
   LMemBefore := GetHeapStatus.TotalAllocated;
@@ -393,24 +305,15 @@ var
   LMemBefore, LMemAfter, LMemPeak: Int64;
   I: Integer;
 begin
-  LSchema := '{
-' +
-    '  "type": "array",
-' +
-    '  "items": {
-' +
-    '    "type": "object",
-' +
-    '    "properties": {
-' +
-    '      "name": { "type": "string" },
-' +
-    '      "value": { "type": "number" }
-' +
-    '    }
-' +
-    '  }
-' +
+  LSchema := '{' +
+    '  "type": "array",' +
+    '  "items": {' +
+    '    "type": "object",' +
+    '    "properties": {' +
+    '      "name": { "type": "string" },' +
+    '      "value": { "type": "number" }' +
+    '    }' +
+    '  }' +
     '}';
     
   // Criar um array grande para testar uso de memória

@@ -1,44 +1,33 @@
 {
-                          Apache License
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
 
-       Licensed under the Apache License, Version 2.0 (the "License");
-       you may not use this file except in compliance with the License.
-       You may obtain a copy of the License at
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
 
-             http://www.apache.org/licenses/LICENSE-2.0
-
-       Unless required by applicable law or agreed to in writing, software
-       distributed under the License is distributed on an "AS IS" BASIS,
-       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-       See the License for the specific language governing permissions and
-       limitations under the License.
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
 }
 
-{
-  @abstract(JsonFlow4D: Advanced JSON Handling Framework for Delphi)
-  @description(A versatile and powerful library for JSON serialization, deserialization, and manipulation in Delphi. It offers navigation via pointers, the ability to edit and update JSON, and supports middleware for custom type handling and JSON schema validation.)
-  @created(03 Abr 2025)
-  @author(Isaque Pinheiro <isaquepsp@gmail.com>)
-  @Discord(https://discord.gg/T2zJC8zX)
-}
-
-{$include ./jsonflow4d.inc}
+{$include ./JsonFlow.inc}
 
 unit JsonFlow;
 
 interface
 
 uses
-  System.Rtti,
-  System.SysUtils,
-  System.Classes,
-  System.Generics.Collections,
+  Rtti,
+  SysUtils,
+  Classes,
+  Generics.Collections,
   Data.DB,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.Reader,
-  JsonFlow4D.Writer,
-  JsonFlow4D.Serializer,
-  JsonFlow4D.Converters;
+  JsonFlow.Interfaces,
+  JsonFlow.Reader,
+  JsonFlow.Writer,
+  JsonFlow.Serializer,
+  JsonFlow.Converters;
 
 type
   TJsonFlow = class
@@ -92,7 +81,7 @@ implementation
 
 { TJSONBr }
 
-class procedure TJsonFlow4D._Initialization;
+class procedure TJsonFlow._Initialization;
 begin
   FSerializer := TJSONSerializer.Create(FFormatSettings);
   FReader := TJSONReader.Create(FFormatSettings);
@@ -100,12 +89,12 @@ begin
   FConverters := TJsonFlowConvertersFactory.CreateDefault;
 end;
 
-class procedure TJsonFlow4D.ClearMiddlewares;
+class procedure TJsonFlow.ClearMiddlewares;
 begin
   FSerializer.Middlewares.Clear;
 end;
 
-class constructor TJsonFlow4D.Create;
+class constructor TJsonFlow.Create;
 begin
   FFormatSettings := TFormatSettings.Create('en-US');
   FFormatSettings.ShortDateFormat := 'yyyy-mm-dd';
@@ -115,7 +104,7 @@ begin
   _Initialization;
 end;
 
-class destructor TJsonFlow4D.Destroy;
+class destructor TJsonFlow.Destroy;
 begin
   FConverters := nil;
   FSerializer.Free;
@@ -123,17 +112,17 @@ begin
   FReader.Free;
 end;
 
-class procedure TJsonFlow4D.AddMiddleware(const AMiddleware: IEventMiddleware);
+class procedure TJsonFlow.AddMiddleware(const AMiddleware: IEventMiddleware);
 begin
   FSerializer.Middlewares.Add(AMiddleware);
 end;
 
-class function TJsonFlow4D.ObjectToJsonString(AObject: TObject; AStoreClassName: Boolean): String;
+class function TJsonFlow.ObjectToJsonString(AObject: TObject; AStoreClassName: Boolean): String;
 begin
   Result := FSerializer.FromObject(AObject, AStoreClassName).AsJSON;
 end;
 
-class function TJsonFlow4D.ObjectListToJsonString(AObjectList: TObjectList<TObject>; AStoreClassName: Boolean): String;
+class function TJsonFlow.ObjectListToJsonString(AObjectList: TObjectList<TObject>; AStoreClassName: Boolean): String;
 var
   LFor: Integer;
   LBuilder: TStringBuilder;
@@ -154,7 +143,7 @@ begin
   end;
 end;
 
-class function TJsonFlow4D.ObjectListToJsonString<T>(AObjectList: TObjectList<T>; AStoreClassName: Boolean): String;
+class function TJsonFlow.ObjectListToJsonString<T>(AObjectList: TObjectList<T>; AStoreClassName: Boolean): String;
 var
   LFor: Integer;
   LBuilder: TStringBuilder;
@@ -175,7 +164,7 @@ begin
   end;
 end;
 
-class function TJsonFlow4D.JsonToObject<T>(const AJson: String): T;
+class function TJsonFlow.JsonToObject<T>(const AJson: String): T;
 var
   LElement: IJSONElement;
 begin
@@ -190,12 +179,12 @@ begin
   end;
 end;
 
-class function TJsonFlow4D.JsonToObject<T>(const AObject: T; const AJson: String): Boolean;
+class function TJsonFlow.JsonToObject<T>(const AObject: T; const AJson: String): Boolean;
 begin
   Result := FSerializer.ToObject(FReader.Read(AJson), AObject);
 end;
 
-class function TJsonFlow4D.JsonToObjectList<T>(const AJson: String): TObjectList<T>;
+class function TJsonFlow.JsonToObjectList<T>(const AJson: String): TObjectList<T>;
 var
   LElement: IJSONElement;
   LArray: IJSONArray;
@@ -226,7 +215,7 @@ begin
   end;
 end;
 
-class function TJsonFlow4D.JsonToObjectList(const AJson: String; const AType: TClass): TObjectList<TObject>;
+class function TJsonFlow.JsonToObjectList(const AJson: String; const AType: TClass): TObjectList<TObject>;
 var
   LElement: IJSONElement;
   LArray: IJSONArray;
@@ -257,13 +246,13 @@ begin
   end;
 end;
 
-class procedure TJsonFlow4D.JsonToObject(const AJson: String; AObject: TObject);
+class procedure TJsonFlow.JsonToObject(const AJson: String; AObject: TObject);
 begin
   if not FSerializer.ToObject(FReader.Read(AJson), AObject) then
     raise Exception.Create('Failed to deserialize JSON to object');
 end;
 
-class procedure TJsonFlow4D._SetFormatSettings(const Value: TFormatSettings);
+class procedure TJsonFlow._SetFormatSettings(const Value: TFormatSettings);
 begin
   if Assigned(FSerializer) then
     FSerializer.Free;
@@ -277,27 +266,27 @@ begin
   _Initialization;
 end;
 
-class function TJsonFlow4D.Parse(const AJson: String): IJSONElement;
+class function TJsonFlow.Parse(const AJson: String): IJSONElement;
 begin
   Result := FReader.Read(AJson);
 end;
 
-class function TJsonFlow4D.ToJson(const AElement: IJSONElement; const AIdent: Boolean): String;
+class function TJsonFlow.ToJson(const AElement: IJSONElement; const AIdent: Boolean): String;
 begin
   Result := FWriter.Write(AElement, AIdent);
 end;
 
-class function TJsonFlow4D.FromObject(AObject: TObject; AStoreClassName: Boolean): IJSONElement;
+class function TJsonFlow.FromObject(AObject: TObject; AStoreClassName: Boolean): IJSONElement;
 begin
   Result := FSerializer.FromObject(AObject, AStoreClassName);
 end;
 
-class function TJsonFlow4D.ToObject(const AElement: IJSONElement; AObject: TObject): Boolean;
+class function TJsonFlow.ToObject(const AElement: IJSONElement; AObject: TObject): Boolean;
 begin
   Result := FSerializer.ToObject(AElement, AObject);
 end;
 
-class procedure TJsonFlow4D.OnLog(const ALogProc: TProc<String>);
+class procedure TJsonFlow.OnLog(const ALogProc: TProc<String>);
 begin
   if Assigned(ALogProc) then
   begin
@@ -309,81 +298,82 @@ end;
 
 // Converter Methods Implementation
 
-class function TJsonFlow4D.XMLToJSON(const AXML: string): string;
+class function TJsonFlow.XMLToJSON(const AXML: string): string;
 begin
   Result := FConverters.XMLToJSON(AXML);
 end;
 
-class function TJsonFlow4D.JSONToXML(const AJSON: string): string;
+class function TJsonFlow.JSONToXML(const AJSON: string): string;
 begin
   Result := FConverters.JSONToXML(AJSON);
 end;
 
-class function TJsonFlow4D.XMLToJSON(const AXML: string; const AOptions: string): string;
+class function TJsonFlow.XMLToJSON(const AXML: string; const AOptions: string): string;
 begin
   Result := FConverters.XMLToJSON(AXML, AOptions);
 end;
 
-class function TJsonFlow4D.JSONToXML(const AJSON: string; const AOptions: string): string;
+class function TJsonFlow.JSONToXML(const AJSON: string; const AOptions: string): string;
 begin
   Result := FConverters.JSONToXML(AJSON, AOptions);
 end;
 
-class function TJsonFlow4D.DataSetToJSON(ADataSet: TDataSet): string;
+class function TJsonFlow.DataSetToJSON(ADataSet: TDataSet): string;
 begin
   Result := FConverters.DataSetToJSON(ADataSet);
 end;
 
-class function TJsonFlow4D.JSONToDataSet(const AJSON: string; ADataSet: TDataSet): Boolean;
+class function TJsonFlow.JSONToDataSet(const AJSON: string; ADataSet: TDataSet): Boolean;
 begin
   Result := FConverters.JSONToDataSet(AJSON, ADataSet);
 end;
 
-class function TJsonFlow4D.DataSetToJSON(ADataSet: TDataSet; const AOptions: string): string;
+class function TJsonFlow.DataSetToJSON(ADataSet: TDataSet; const AOptions: string): string;
 begin
   Result := FConverters.DataSetToJSON(ADataSet, AOptions);
 end;
 
-class function TJsonFlow4D.JSONToDataSet(const AJSON: string; ADataSet: TDataSet; const AOptions: string): Boolean;
+class function TJsonFlow.JSONToDataSet(const AJSON: string; ADataSet: TDataSet; const AOptions: string): Boolean;
 begin
   Result := FConverters.JSONToDataSet(AJSON, ADataSet, AOptions);
 end;
 
-class function TJsonFlow4D.IsValidJSON(const AJSON: string): Boolean;
+class function TJsonFlow.IsValidJSON(const AJSON: string): Boolean;
 begin
   Result := FConverters.IsValidJSON(AJSON);
 end;
 
-class function TJsonFlow4D.IsValidXML(const AXML: string): Boolean;
+class function TJsonFlow.IsValidXML(const AXML: string): Boolean;
 begin
   Result := FConverters.IsValidXML(AXML);
 end;
 
-class function TJsonFlow4D.GetConverterLastError: string;
+class function TJsonFlow.GetConverterLastError: string;
 begin
   Result := FConverters.GetLastError;
 end;
 
-class procedure TJsonFlow4D.ClearConverterError;
+class procedure TJsonFlow.ClearConverterError;
 begin
   FConverters.ClearError;
 end;
 
-class procedure TJsonFlow4D.ConfigureXMLConverter(const AConfig: string);
+class procedure TJsonFlow.ConfigureXMLConverter(const AConfig: string);
 begin
   FConverters.ConfigureXMLConverter(AConfig);
 end;
 
-class procedure TJsonFlow4D.ConfigureDataSetConverter(const AConfig: string);
+class procedure TJsonFlow.ConfigureDataSetConverter(const AConfig: string);
 begin
   FConverters.ConfigureDataSetConverter(AConfig);
 end;
 
-class procedure TJsonFlow4D.ConfigureObjectConverter(const AConfig: string);
+class procedure TJsonFlow.ConfigureObjectConverter(const AConfig: string);
 begin
   FConverters.ConfigureObjectConverter(AConfig);
 end;
 
 end.
+
 
 

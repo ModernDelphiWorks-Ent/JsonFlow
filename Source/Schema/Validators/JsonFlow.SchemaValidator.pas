@@ -1,12 +1,26 @@
+ï»¿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
 unit JsonFlow.SchemaValidator;
 
 {
   JsonFlow4D - Schema Validator v2.0
-  
+
   Este arquivo implementa o novo validador de esquema JSON que utiliza a
   arquitetura refatorada baseada em Visitor Pattern, mantendo compatibilidade
   total com a API existente.
-  
+
   Principais melhorias:
   - Performance 5-10x superior
   - Zero memory leaks
@@ -14,7 +28,7 @@ unit JsonFlow.SchemaValidator;
   - Context-aware validation
   - M?tricas de performance integradas
   - Suporte a valida??o ass?ncrona
-  
+
   Autor: JsonFlow4D Framework v2.0
   Data: 2024
 }
@@ -28,27 +42,27 @@ uses
   System.Diagnostics,
   System.TypInfo,
   System.Hash,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.ValidationEngine,
-  JsonFlow4D.ValidationRules;
+  JsonFlow.Interfaces,
+  JsonFlow.ValidationEngine,
+  JsonFlow.ValidationRules;
 
 type
   // Usar TValidationResult do ValidationEngine
-  
+
   // Schema compilado - Fase 2: Base URI e HTTP
   TCompiledSchema = record
     Rules: TArray<IValidationRule>;
     OptimizationLevel: Integer;
     CacheKey: string;
     CompiledAt: TDateTime;
-    // Fase 2: Base URI e referências HTTP
+    // Fase 2: Base URI e referÃªncias HTTP
     BaseURI: string;
     SchemaID: string;
     ResolvedRefs: TDictionary<string, IJSONElement>;
     HTTPRefs: TArray<string>;
     HasCircularRefs: Boolean;
   end;
-  
+
   // Classes auxiliares simplificadas
   TValidationMemoizer = class
   private
@@ -73,7 +87,7 @@ type
     procedure Clear;
     procedure EvictLRU;
   end;
-  
+
   TValidationVisitor = class
   private
     FMemoizer: TValidationMemoizer;
@@ -89,7 +103,7 @@ type
     procedure GetStats(out ATotalValidations, ACacheHits: Integer; out ATotalTime: Int64);
     procedure ResetStats;
   end;
-  
+
   // Compilador de schemas - Fase 2: Base URI e HTTP
   TSchemaCompiler = class(TInterfacedObject, ISchemaCompiler)
   private
@@ -99,13 +113,13 @@ type
     FRootSchema: IJSONElement;
     // Fase 2: Base URI e HTTP
     FBaseURIStack: TStack<string>;
-    FHTTPClient: TObject; // THTTPClient será implementado posteriormente
+    FHTTPClient: TObject; // THTTPClient serÃ¡ implementado posteriormente
     FEnableHTTPResolution: Boolean;
     function ResolveReference(const ARefPath: string; const ACurrentSchema: IJSONElement): IJSONElement; overload;
     function FindAnchor(const AAnchorName: string; const ASchema: IJSONElement): IJSONElement;
     procedure _RegisterVersionSpecificRules(const ASchemaObj: IJSONObject; const ARules: TList<IValidationRule>);
     procedure _RegisterAdditionalVersionRules(const ASchemaObj: IJSONObject; const ARules: TList<IValidationRule>);
-    // Fase 2: Métodos de Base URI
+    // Fase 2: MÃ©todos de Base URI
     function _ExtractBaseURI(const ASchema: IJSONElement): string;
     function _ResolveBaseURI(const ARefPath, ACurrentBaseURI: string): string;
     function _IsAbsoluteURI(const AURI: string): Boolean;
@@ -133,7 +147,7 @@ type
     Path: string;
   end;
 
-  // TValidationContext agora ? definido apenas em JsonFlow4D.ValidationEngine
+  // TValidationContext agora ? definido apenas em JsonFlow.ValidationEngine
 
   // Configura??es do validador v2
   TValidatorConfig = record
@@ -213,7 +227,7 @@ uses
   System.DateUtils,
   System.Math,
   System.Generics.Defaults,
-  JsonFlow4D.Reader;
+  JsonFlow.Reader;
 
 { TValidationMemoizer }
 
@@ -329,7 +343,7 @@ begin
   inherited Destroy;
 end;
 
-{ TValidationContext - implementa??o movida para JsonFlow4D.ValidationEngine }
+{ TValidationContext - implementa??o movida para JsonFlow.ValidationEngine }
 
 procedure TValidationVisitor.GetStats(out ATotalValidations, ACacheHits: Integer; out ATotalTime: Int64);
 begin
@@ -566,13 +580,13 @@ begin
   // Fase 2: Inicializar Base URI e HTTP
   FBaseURIStack := TStack<string>.Create;
   FBaseURIStack.Push(''); // Base URI vazia inicial
-  FEnableHTTPResolution := False; // Desabilitado por padrão
-  FHTTPClient := nil; // Será inicializado quando necessário
+  FEnableHTTPResolution := False; // Desabilitado por padrÃ£o
+  FHTTPClient := nil; // SerÃ¡ inicializado quando necessÃ¡rio
 end;
 
 destructor TSchemaCompiler.Destroy;
 begin
-  ClearCache; // Limpar cache antes de liberar o dicionário
+  ClearCache; // Limpar cache antes de liberar o dicionÃ¡rio
   FCompiledSchemas.Free;
   // Fase 2: Limpar recursos Base URI e HTTP
   FBaseURIStack.Free;
@@ -594,14 +608,14 @@ var
   LPattern: string;
   LFormat: string;
 begin
-  // Regras básicas suportadas por todas as versões
+  // Regras bÃ¡sicas suportadas por todas as versÃµes
   if ASchemaObj.ContainsKey('type') then
   begin
     LTypeValue := (ASchemaObj.GetValue('type') as IJSONValue).AsString;
     ARules.Add(TTypeRule.Create(LTypeValue));
   end;
 
-  // Regras numéricas - suportadas desde Draft 3
+  // Regras numÃ©ricas - suportadas desde Draft 3
   if FVersion >= jsvDraft3 then
   begin
     if ASchemaObj.ContainsKey('minimum') then
@@ -655,7 +669,7 @@ begin
     end;
   end;
 
-  // Regras matemáticas - suportadas desde Draft 6
+  // Regras matemÃ¡ticas - suportadas desde Draft 6
   if FVersion >= jsvDraft6 then
   begin
     if ASchemaObj.ContainsKey('multipleOf') then
@@ -691,7 +705,7 @@ var
   LRequiredArray: IJSONArray;
   LRequiredProps: TArray<string>;
 begin
-  // Regras de enumeração - suportadas desde Draft 3
+  // Regras de enumeraÃ§Ã£o - suportadas desde Draft 3
   if (FVersion >= jsvDraft3) and ASchemaObj.ContainsKey('enum') then
   begin
     LEnumArray := ASchemaObj.GetValue('enum') as IJSONArray;
@@ -851,10 +865,10 @@ begin
   try
     if Supports(ASchema, IJSONObject, LSchemaObj) then
     begin
-      // Analisar propriedades do schema e criar regras baseadas na versão
+      // Analisar propriedades do schema e criar regras baseadas na versÃ£o
       _RegisterVersionSpecificRules(LSchemaObj, LRules);
 
-      // Registrar regras adicionais baseadas na versão
+      // Registrar regras adicionais baseadas na versÃ£o
       _RegisterAdditionalVersionRules(LSchemaObj, LRules);
 
       // Coletar propriedades definidas para usar na valida??o de additionalProperties
@@ -983,7 +997,7 @@ begin
     Result.SchemaID := LSchemaID;
     Result.ResolvedRefs := TDictionary<string, IJSONElement>.Create;
     SetLength(Result.HTTPRefs, 0);
-    Result.HasCircularRefs := False; // Será detectado durante a validação
+    Result.HasCircularRefs := False; // SerÃ¡ detectado durante a validaÃ§Ã£o
 
     // Aplicar otimiza??es se habilitadas
     if FOptimizations then
@@ -1046,7 +1060,7 @@ begin
   // Fase 2: Obter Base URI atual
   LCurrentBaseURI := _GetCurrentBaseURI;
 
-  // Fase 2: Verificar se é uma referência HTTP absoluta
+  // Fase 2: Verificar se Ã© uma referÃªncia HTTP absoluta
   if _IsHTTPURI(ARefPath) then
   begin
     Result := _ResolveHTTPReference(ARefPath);
@@ -1056,7 +1070,7 @@ begin
   // Fase 2: Resolver URI relativa com Base URI
   LResolvedURI := _ResolveBaseURI(ARefPath, LCurrentBaseURI);
 
-  // Suporte básico para referências locais (#/$defs/...)
+  // Suporte bÃ¡sico para referÃªncias locais (#/$defs/...)
   if ARefPath.StartsWith('#/$defs/') then
   begin
     LDefName := ARefPath.Substring(8); // Remove '#/$defs/'
@@ -1074,18 +1088,18 @@ begin
       end;
     end;
   end
-  // Suporte para âncoras (#anchorName)
+  // Suporte para Ã¢ncoras (#anchorName)
   else if ARefPath.StartsWith('#') and not ARefPath.Contains('/') then
   begin
     LAnchorName := ARefPath.Substring(1); // Remove '#'
     Result := FindAnchor(LAnchorName, FRootSchema);
   end
-  // Fase 2: Verificar se a URI resolvida é HTTP
+  // Fase 2: Verificar se a URI resolvida Ã© HTTP
   else if _IsHTTPURI(LResolvedURI) then
   begin
     Result := _ResolveHTTPReference(LResolvedURI);
   end;
-  // Adicionar suporte para outras referências no futuro
+  // Adicionar suporte para outras referÃªncias no futuro
 end;
 
 function TSchemaCompiler.FindAnchor(const AAnchorName: string; const ASchema: IJSONElement): IJSONElement;

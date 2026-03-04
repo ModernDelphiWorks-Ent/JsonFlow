@@ -1,4 +1,4 @@
-﻿unit JsonFlow4D.TestsReader;
+﻿unit JsonFlow.TestsReader;
 
 interface
 
@@ -6,8 +6,8 @@ uses
   System.SysUtils,
   System.Classes,
   DUnitX.TestFramework,
-  JsonFlow4D.Reader,
-  JsonFlow4D.Interfaces;
+  JsonFlow.Reader,
+  JsonFlow.Interfaces;
 
 type
   [TestFixture]

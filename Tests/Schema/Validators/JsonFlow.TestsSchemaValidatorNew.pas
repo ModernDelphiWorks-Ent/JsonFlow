@@ -1,11 +1,11 @@
-﻿unit JsonFlow4D.TestsSchemaValidatorNew;
+﻿unit JsonFlow.TestsSchemaValidatorNew;
 
 interface
 
 uses
   DUnitX.TestFramework,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.SchemaReader;
+  JsonFlow.Interfaces,
+  JsonFlow.SchemaReader;
 
 type
   [TestFixture]

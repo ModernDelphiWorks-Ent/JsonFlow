@@ -1,4 +1,18 @@
-﻿unit JsonFlow.FormatValidators.Brazil;
+﻿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../../../JsonFlow.inc}
+unit JsonFlow.FormatValidators.Brazil;
 
 {
   JsonFlow4D - Validadores de Formato Brasileiros
@@ -20,11 +34,11 @@
 interface
 
 uses
-  JsonFlow4D.FormatValidators.CPF,
-  JsonFlow4D.FormatValidators.CNPJ,
-  JsonFlow4D.FormatValidators.CEP,
-  JsonFlow4D.FormatValidators.BrazilianPhone,
-  JsonFlow4D.FormatValidators.BrazilianLicensePlate;
+  JsonFlow.FormatValidators.CPF,
+  JsonFlow.FormatValidators.CNPJ,
+  JsonFlow.FormatValidators.CEP,
+  JsonFlow.FormatValidators.BrazilianPhone,
+  JsonFlow.FormatValidators.BrazilianLicensePlate;
 
 // Registra todos os validadores brasileiros
 procedure RegisterAllBrazilianFormatValidators;

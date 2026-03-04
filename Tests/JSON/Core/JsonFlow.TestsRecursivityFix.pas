@@ -1,13 +1,13 @@
-﻿unit JsonFlow4D.TestsRecursivityFix;
+﻿unit JsonFlow.TestsRecursivityFix;
 
 interface
 
 uses
   DUnitX.TestFramework,
   System.SysUtils,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.SchemaReader,
-  JsonFlow4D.Reader;
+  JsonFlow.Interfaces,
+  JsonFlow.SchemaReader,
+  JsonFlow.Reader;
 
 type
   [TestFixture]

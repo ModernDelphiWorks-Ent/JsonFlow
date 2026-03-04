@@ -1,11 +1,25 @@
-﻿unit JsonFlow.FormatValidators.Time;
+﻿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../../JsonFlow.inc}
+unit JsonFlow.FormatValidators.Time;
 
 interface
 
 uses
   System.SysUtils,
   System.RegularExpressions,
-  JsonFlow4D.FormatValidators.Base;
+  JsonFlow.FormatValidators.Base;
 
 type
   TTimeFormatValidator = class(TBaseFormatValidatorPlugin)
@@ -22,7 +36,7 @@ type
 implementation
 
 uses
-  JsonFlow4D.FormatRegistry;
+  JsonFlow.FormatRegistry;
 
 { TTimeFormatValidator }
 

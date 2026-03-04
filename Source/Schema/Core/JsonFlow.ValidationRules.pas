@@ -1,4 +1,18 @@
-﻿unit JsonFlow.ValidationRules;
+﻿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
+unit JsonFlow.ValidationRules;
 
 interface
 
@@ -6,70 +20,70 @@ uses
   System.SysUtils,
   System.Classes,
   System.Generics.Collections,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.ValidationEngine,
-  JsonFlow4D.ValidationRules.Base,
-  JsonFlow4D.ValidationRules.Types,
-  JsonFlow4D.ValidationRules.Minimum,
-  JsonFlow4D.ValidationRules.Maximum,
-  JsonFlow4D.ValidationRules.MinLength,
-  JsonFlow4D.ValidationRules.MaxLength,
-  JsonFlow4D.ValidationRules.ExclusiveMinimum,
-  JsonFlow4D.ValidationRules.ExclusiveMaximum,
-  JsonFlow4D.ValidationRules.MultipleOf,
-  JsonFlow4D.ValidationRules.Pattern,
-  JsonFlow4D.ValidationRules.Format,
-  JsonFlow4D.ValidationRules.Enum,
-  JsonFlow4D.ValidationRules.Consts,
-  JsonFlow4D.ValidationRules.Required,
-  JsonFlow4D.ValidationRules.Properties,
-  JsonFlow4D.ValidationRules.AdditionalProperties,
-  JsonFlow4D.ValidationRules.Items,
-  JsonFlow4D.ValidationRules.UniqueItems,
-  JsonFlow4D.ValidationRules.MinItems,
-  JsonFlow4D.ValidationRules.MaxItems,
-  JsonFlow4D.ValidationRules.MinProperties,
-  JsonFlow4D.ValidationRules.MaxProperties,
-  JsonFlow4D.ValidationRules.AllOf,
-  JsonFlow4D.ValidationRules.AnyOf,
-  JsonFlow4D.ValidationRules.OneOf,
-  JsonFlow4D.ValidationRules.NotRule,
-  JsonFlow4D.ValidationRules.Contains,
-  JsonFlow4D.ValidationRules.PatternProperties,
-  JsonFlow4D.ValidationRules.PropertyNames,
-  JsonFlow4D.ValidationRules.Conditional;
+  JsonFlow.Interfaces,
+  JsonFlow.ValidationEngine,
+  JsonFlow.ValidationRules.Base,
+  JsonFlow.ValidationRules.Types,
+  JsonFlow.ValidationRules.Minimum,
+  JsonFlow.ValidationRules.Maximum,
+  JsonFlow.ValidationRules.MinLength,
+  JsonFlow.ValidationRules.MaxLength,
+  JsonFlow.ValidationRules.ExclusiveMinimum,
+  JsonFlow.ValidationRules.ExclusiveMaximum,
+  JsonFlow.ValidationRules.MultipleOf,
+  JsonFlow.ValidationRules.Pattern,
+  JsonFlow.ValidationRules.Format,
+  JsonFlow.ValidationRules.Enum,
+  JsonFlow.ValidationRules.Consts,
+  JsonFlow.ValidationRules.Required,
+  JsonFlow.ValidationRules.Properties,
+  JsonFlow.ValidationRules.AdditionalProperties,
+  JsonFlow.ValidationRules.Items,
+  JsonFlow.ValidationRules.UniqueItems,
+  JsonFlow.ValidationRules.MinItems,
+  JsonFlow.ValidationRules.MaxItems,
+  JsonFlow.ValidationRules.MinProperties,
+  JsonFlow.ValidationRules.MaxProperties,
+  JsonFlow.ValidationRules.AllOf,
+  JsonFlow.ValidationRules.AnyOf,
+  JsonFlow.ValidationRules.OneOf,
+  JsonFlow.ValidationRules.NotRule,
+  JsonFlow.ValidationRules.Contains,
+  JsonFlow.ValidationRules.PatternProperties,
+  JsonFlow.ValidationRules.PropertyNames,
+  JsonFlow.ValidationRules.Conditional;
 
 type
-  TBaseValidationRule = JsonFlow4D.ValidationRules.Base.TBaseValidationRule;
-  TTypeRule = JsonFlow4D.ValidationRules.Types.TTypeRule;
-  TMinimumRule = JsonFlow4D.ValidationRules.Minimum.TMinimumRule;
-  TMaximumRule = JsonFlow4D.ValidationRules.Maximum.TMaximumRule;
-  TMinLengthRule = JsonFlow4D.ValidationRules.MinLength.TMinLengthRule;
-  TMaxLengthRule = JsonFlow4D.ValidationRules.MaxLength.TMaxLengthRule;
-  TExclusiveMinimumRule = JsonFlow4D.ValidationRules.ExclusiveMinimum.TExclusiveMinimumRule;
-  TExclusiveMaximumRule = JsonFlow4D.ValidationRules.ExclusiveMaximum.TExclusiveMaximumRule;
-  TMultipleOfRule = JsonFlow4D.ValidationRules.MultipleOf.TMultipleOfRule;
-  TPatternRule = JsonFlow4D.ValidationRules.Pattern.TPatternRule;
-  TFormatRule = JsonFlow4D.ValidationRules.Format.TFormatRule;
-  TEnumRule = JsonFlow4D.ValidationRules.Enum.TEnumRule;
-  TConstRule = JsonFlow4D.ValidationRules.Consts.TConstRule;
-  TRequiredRule = JsonFlow4D.ValidationRules.Required.TRequiredRule;
-  TPropertiesRule = JsonFlow4D.ValidationRules.Properties.TPropertiesRule;
-  TAdditionalPropertiesRule = JsonFlow4D.ValidationRules.AdditionalProperties.TAdditionalPropertiesRule;
-  TItemsRule = JsonFlow4D.ValidationRules.Items.TItemsRule;
-  TUniqueItemsRule = JsonFlow4D.ValidationRules.UniqueItems.TUniqueItemsRule;
-  TMinItemsRule = JsonFlow4D.ValidationRules.MinItems.TMinItemsRule;
-  TMaxItemsRule = JsonFlow4D.ValidationRules.MaxItems.TMaxItemsRule;
-  TMinPropertiesRule = JsonFlow4D.ValidationRules.MinProperties.TMinPropertiesRule;
-  TMaxPropertiesRule = JsonFlow4D.ValidationRules.MaxProperties.TMaxPropertiesRule;
-  TAllOfRule = JsonFlow4D.ValidationRules.AllOf.TAllOfRule;
-  TAnyOfRule = JsonFlow4D.ValidationRules.AnyOf.TAnyOfRule;
-  TOneOfRule = JsonFlow4D.ValidationRules.OneOf.TOneOfRule;
-  TNotRule = JsonFlow4D.ValidationRules.NotRule.TNotRule;
-  TContainsRule = JsonFlow4D.ValidationRules.Contains.TContainsRule;
-  TPatternPropertiesRule = JsonFlow4D.ValidationRules.PatternProperties.TPatternPropertiesRule;
-  TPropertyNamesRule = JsonFlow4D.ValidationRules.PropertyNames.TPropertyNamesRule;
-  TConditionalRule = JsonFlow4D.ValidationRules.Conditional.TConditionalRule;
+  TBaseValidationRule = JsonFlow.ValidationRules.Base.TBaseValidationRule;
+  TTypeRule = JsonFlow.ValidationRules.Types.TTypeRule;
+  TMinimumRule = JsonFlow.ValidationRules.Minimum.TMinimumRule;
+  TMaximumRule = JsonFlow.ValidationRules.Maximum.TMaximumRule;
+  TMinLengthRule = JsonFlow.ValidationRules.MinLength.TMinLengthRule;
+  TMaxLengthRule = JsonFlow.ValidationRules.MaxLength.TMaxLengthRule;
+  TExclusiveMinimumRule = JsonFlow.ValidationRules.ExclusiveMinimum.TExclusiveMinimumRule;
+  TExclusiveMaximumRule = JsonFlow.ValidationRules.ExclusiveMaximum.TExclusiveMaximumRule;
+  TMultipleOfRule = JsonFlow.ValidationRules.MultipleOf.TMultipleOfRule;
+  TPatternRule = JsonFlow.ValidationRules.Pattern.TPatternRule;
+  TFormatRule = JsonFlow.ValidationRules.Format.TFormatRule;
+  TEnumRule = JsonFlow.ValidationRules.Enum.TEnumRule;
+  TConstRule = JsonFlow.ValidationRules.Consts.TConstRule;
+  TRequiredRule = JsonFlow.ValidationRules.Required.TRequiredRule;
+  TPropertiesRule = JsonFlow.ValidationRules.Properties.TPropertiesRule;
+  TAdditionalPropertiesRule = JsonFlow.ValidationRules.AdditionalProperties.TAdditionalPropertiesRule;
+  TItemsRule = JsonFlow.ValidationRules.Items.TItemsRule;
+  TUniqueItemsRule = JsonFlow.ValidationRules.UniqueItems.TUniqueItemsRule;
+  TMinItemsRule = JsonFlow.ValidationRules.MinItems.TMinItemsRule;
+  TMaxItemsRule = JsonFlow.ValidationRules.MaxItems.TMaxItemsRule;
+  TMinPropertiesRule = JsonFlow.ValidationRules.MinProperties.TMinPropertiesRule;
+  TMaxPropertiesRule = JsonFlow.ValidationRules.MaxProperties.TMaxPropertiesRule;
+  TAllOfRule = JsonFlow.ValidationRules.AllOf.TAllOfRule;
+  TAnyOfRule = JsonFlow.ValidationRules.AnyOf.TAnyOfRule;
+  TOneOfRule = JsonFlow.ValidationRules.OneOf.TOneOfRule;
+  TNotRule = JsonFlow.ValidationRules.NotRule.TNotRule;
+  TContainsRule = JsonFlow.ValidationRules.Contains.TContainsRule;
+  TPatternPropertiesRule = JsonFlow.ValidationRules.PatternProperties.TPatternPropertiesRule;
+  TPropertyNamesRule = JsonFlow.ValidationRules.PropertyNames.TPropertyNamesRule;
+  TConditionalRule = JsonFlow.ValidationRules.Conditional.TConditionalRule;
 
   // Factory para cria��o de regras
   TValidationRuleFactory = class

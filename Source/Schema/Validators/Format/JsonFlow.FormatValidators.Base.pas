@@ -1,10 +1,24 @@
-﻿unit JsonFlow.FormatValidators.Base;
+﻿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../../JsonFlow.inc}
+unit JsonFlow.FormatValidators.Base;
 
 interface
 
 uses
   System.SysUtils,
-  JsonFlow4D.FormatRegistry;
+  JsonFlow.FormatRegistry;
 
 type
   // Classe base para validadores de formato individuais

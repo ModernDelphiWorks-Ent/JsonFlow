@@ -1,3 +1,17 @@
+ï»¿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
 unit JsonFlow.ValidationRules.Base;
 
 interface
@@ -5,11 +19,11 @@ interface
 uses
   System.SysUtils,
   System.Classes,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.ValidationEngine;
+  JsonFlow.Interfaces,
+  JsonFlow.ValidationEngine;
 
 type
-  // Regra base para todas as regras de validação
+  // Regra base para todas as regras de validaÃ§Ã£o
   TBaseValidationRule = class(TInterfacedObject, IValidationRule)
   protected
     FKeyword: string;

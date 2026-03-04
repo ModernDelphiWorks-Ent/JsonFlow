@@ -1,19 +1,33 @@
+ï»¿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
 unit JsonFlow.Reports;
 
 {
-  JsonFlow4D - Sistema de Relatórios Detalhados
+  JsonFlow4D - Sistema de RelatÃ³rios Detalhados
   
-  Este arquivo implementa um sistema completo de relatórios para análise
-  de validação e performance, incluindo relatórios em múltiplos formatos
-  (HTML, JSON, CSV, XML) e diferentes tipos de análises.
+  Este arquivo implementa um sistema completo de relatÃ³rios para anÃ¡lise
+  de validaÃ§Ã£o e performance, incluindo relatÃ³rios em mÃºltiplos formatos
+  (HTML, JSON, CSV, XML) e diferentes tipos de anÃ¡lises.
   
   Funcionalidades:
-  - Relatórios de validação detalhados
-  - Análise de performance e métricas
-  - Relatórios de cache e otimização
-  - Exportação em múltiplos formatos
-  - Gráficos e visualizações
-  - Relatórios agendados
+  - RelatÃ³rios de validaÃ§Ã£o detalhados
+  - AnÃ¡lise de performance e mÃ©tricas
+  - RelatÃ³rios de cache e otimizaÃ§Ã£o
+  - ExportaÃ§Ã£o em mÃºltiplos formatos
+  - GrÃ¡ficos e visualizaÃ§Ãµes
+  - RelatÃ³rios agendados
   
   Autor: JsonFlow4D Framework
   Data: 2024
@@ -27,26 +41,26 @@ uses
   System.Classes,
   System.Generics.Collections,
   System.DateUtils,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.Metrics,
-  JsonFlow4D.Utils;
+  JsonFlow.Interfaces,
+  JsonFlow.Metrics,
+  JsonFlow.Utils;
 
 type
-  // Tipos de relatório
+  // Tipos de relatÃ³rio
   TReportType = (rtValidationSummary, rtPerformanceAnalysis, rtCacheAnalysis, 
                  rtErrorAnalysis, rtTrendAnalysis, rtComprehensive);
   
-  // Formatos de saída
+  // Formatos de saÃ­da
   TReportFormat = (rfHTML, rfJSON, rfCSV, rfXML, rfPDF, rfText);
   
-  // Período do relatório
+  // PerÃ­odo do relatÃ³rio
   TReportPeriod = record
     StartDate: TDateTime;
     EndDate: TDateTime;
     Description: string;
   end;
   
-  // Configurações do relatório
+  // ConfiguraÃ§Ãµes do relatÃ³rio
   TReportConfig = record
     ReportType: TReportType;
     Format: TReportFormat;
@@ -59,7 +73,7 @@ type
     Author: string;
   end;
   
-  // Dados de erro para relatório
+  // Dados de erro para relatÃ³rio
   TErrorReportData = record
     ErrorType: string;
     Count: Integer;
@@ -69,7 +83,7 @@ type
     AffectedPaths: TArray<string>;
   end;
   
-  // Dados de performance para relatório
+  // Dados de performance para relatÃ³rio
   TPerformanceReportData = record
     TotalValidations: Integer;
     AverageTime: Double;
@@ -81,23 +95,23 @@ type
     MemoryUsage: Int64;
   end;
   
-  // Dados de tendência
+  // Dados de tendÃªncia
   TTrendData = record
     Date: TDateTime;
     Value: Double;
     Caption: string;
   end;
   
-  // Recomendação de otimização
+  // RecomendaÃ§Ã£o de otimizaÃ§Ã£o
   TOptimizationRecommendation = record
     Category: string;
-    Priority: Integer; // 1-5, sendo 5 mais crítico
+    Priority: Integer; // 1-5, sendo 5 mais crÃ­tico
     Description: string;
     ExpectedImpact: string;
     ImplementationSteps: string;
   end;
   
-  // Gerador de relatórios base
+  // Gerador de relatÃ³rios base
   TReportGenerator = class abstract
   protected
     FConfig: TReportConfig;
@@ -117,7 +131,7 @@ type
     property Config: TReportConfig read FConfig write FConfig;
   end;
   
-  // Gerador de relatórios HTML
+  // Gerador de relatÃ³rios HTML
   THtmlReportGenerator = class(TReportGenerator)
   private
     function GenerateHeader: string;
@@ -137,7 +151,7 @@ type
     function Generate: string; override;
   end;
   
-  // Gerador de relatórios JSON
+  // Gerador de relatÃ³rios JSON
   TJsonReportGenerator = class(TReportGenerator)
   private
     function CreateValidationSummaryJson: string;
@@ -151,7 +165,7 @@ type
     function Generate: string; override;
   end;
   
-  // Gerador de relatórios CSV
+  // Gerador de relatÃ³rios CSV
   TCsvReportGenerator = class(TReportGenerator)
   private
     function GenerateValidationCsv: string;
@@ -163,7 +177,7 @@ type
     function Generate: string; override;
   end;
   
-  // Gerador de relatórios XML
+  // Gerador de relatÃ³rios XML
   TXmlReportGenerator = class(TReportGenerator)
   private
     function GenerateXmlHeader: string;
@@ -176,18 +190,18 @@ type
     function Generate: string; override;
   end;
   
-  // Factory para geradores de relatório
+  // Factory para geradores de relatÃ³rio
   TReportGeneratorFactory = class
   public
     class function CreateGenerator(const AConfig: TReportConfig; 
                                   AMetrics: TValidationMetrics): TReportGenerator;
   end;
   
-  // Agendador de relatórios
+  // Agendador de relatÃ³rios
   TReportScheduler = class
   private
     FScheduledReports: TList<TReportConfig>;
-    FTimer: TObject; // TTimer seria ideal, mas mantemos genérico
+    FTimer: TObject; // TTimer seria ideal, mas mantemos genÃ©rico
     FEnabled: Boolean;
     
     procedure ExecuteScheduledReports;
@@ -204,7 +218,7 @@ type
     property Enabled: Boolean read FEnabled;
   end;
   
-  // Gerenciador principal de relatórios
+  // Gerenciador principal de relatÃ³rios
   TReportManager = class
   private
     FMetrics: TValidationMetrics;
@@ -215,11 +229,11 @@ type
     constructor Create(AMetrics: TValidationMetrics);
     destructor Destroy; override;
     
-    // Geração de relatórios
+    // GeraÃ§Ã£o de relatÃ³rios
     function GenerateReport(const AConfig: TReportConfig): string;
     function GenerateQuickReport(AType: TReportType; AFormat: TReportFormat): string;
     
-    // Relatórios predefinidos
+    // RelatÃ³rios predefinidos
     function GenerateDailyReport: string;
     function GenerateWeeklyReport: string;
     function GenerateMonthlyReport: string;
@@ -229,7 +243,7 @@ type
     // Agendamento
     procedure ScheduleReport(const AConfig: TReportConfig);
     
-    // Histórico
+    // HistÃ³rico
     function GetReportHistory: TArray<string>;
     procedure ClearHistory;
     
@@ -365,7 +379,7 @@ begin
     '  <div class="header">' + sLineBreak +
     '    <h1>%s</h1>' + sLineBreak +
     '    <p>Gerado em: %s</p>' + sLineBreak +
-    '    <p>Período: %s até %s</p>' + sLineBreak +
+    '    <p>PerÃ­odo: %s atÃ© %s</p>' + sLineBreak +
     '    <p>Autor: %s</p>' + sLineBreak +
     '  </div>' + sLineBreak,
     [FConfig.Title, FConfig.Title, FormatDateTime(Now),
@@ -377,7 +391,7 @@ function THtmlReportGenerator.GenerateFooter: string;
 begin
   Result := 
     '  <div class="footer">' + sLineBreak +
-    '    <p><small>Relatório gerado pelo JsonFlow4D Framework</small></p>' + sLineBreak +
+    '    <p><small>RelatÃ³rio gerado pelo JsonFlow4D Framework</small></p>' + sLineBreak +
     '  </div>' + sLineBreak +
     '</body>' + sLineBreak +
     '</html>';
@@ -403,18 +417,18 @@ begin
 
   Result := Format(
     '  <div class="section">' + sLineBreak +
-    '    <h2>Resumo de Validações</h2>' + sLineBreak +
+    '    <h2>Resumo de ValidaÃ§Ãµes</h2>' + sLineBreak +
     '    <div class="metric">' + sLineBreak +
-    '      <strong>Total de Validações:</strong> %d' + sLineBreak +
+    '      <strong>Total de ValidaÃ§Ãµes:</strong> %d' + sLineBreak +
     '    </div>' + sLineBreak +
     '    <div class="metric %s">' + sLineBreak +
     '      <strong>Taxa de Sucesso:</strong> %s' + sLineBreak +
     '    </div>' + sLineBreak +
     '    <div class="metric">' + sLineBreak +
-    '      <strong>Tempo Médio:</strong> %s' + sLineBreak +
+    '      <strong>Tempo MÃ©dio:</strong> %s' + sLineBreak +
     '    </div>' + sLineBreak +
     '    <div class="metric">' + sLineBreak +
-    '      <strong>Throughput:</strong> %.2f validações/segundo' + sLineBreak +
+    '      <strong>Throughput:</strong> %.2f validaÃ§Ãµes/segundo' + sLineBreak +
     '    </div>' + sLineBreak +
     '  </div>' + sLineBreak,
     [LPerformanceData.TotalValidations,
@@ -432,14 +446,14 @@ begin
   
   Result := Format(
     '  <div class="section">' + sLineBreak +
-    '    <h2>Análise de Performance</h2>' + sLineBreak +
+    '    <h2>AnÃ¡lise de Performance</h2>' + sLineBreak +
     '    <table>' + sLineBreak +
-    '      <tr><th>Métrica</th><th>Valor</th></tr>' + sLineBreak +
-    '      <tr><td>Tempo Mínimo</td><td>%s</td></tr>' + sLineBreak +
-    '      <tr><td>Tempo Médio</td><td>%s</td></tr>' + sLineBreak +
-    '      <tr><td>Tempo Máximo</td><td>%s</td></tr>' + sLineBreak +
+    '      <tr><th>MÃ©trica</th><th>Valor</th></tr>' + sLineBreak +
+    '      <tr><td>Tempo MÃ­nimo</td><td>%s</td></tr>' + sLineBreak +
+    '      <tr><td>Tempo MÃ©dio</td><td>%s</td></tr>' + sLineBreak +
+    '      <tr><td>Tempo MÃ¡ximo</td><td>%s</td></tr>' + sLineBreak +
     '      <tr><td>Taxa de Cache Hit</td><td>%s</td></tr>' + sLineBreak +
-    '      <tr><td>Uso de Memória</td><td>%s</td></tr>' + sLineBreak +
+    '      <tr><td>Uso de MemÃ³ria</td><td>%s</td></tr>' + sLineBreak +
     '    </table>' + sLineBreak +
     '  </div>' + sLineBreak,
     [FormatDuration(LPerformanceData.MinTime),
@@ -453,8 +467,8 @@ function THtmlReportGenerator.GenerateCacheSection: string;
 begin
   Result := 
     '  <div class="section">' + sLineBreak +
-    '    <h2>Análise de Cache</h2>' + sLineBreak +
-    '    <p>Análise detalhada do cache será implementada...</p>' + sLineBreak +
+    '    <h2>AnÃ¡lise de Cache</h2>' + sLineBreak +
+    '    <p>AnÃ¡lise detalhada do cache serÃ¡ implementada...</p>' + sLineBreak +
     '  </div>' + sLineBreak;
 end;
 
@@ -469,12 +483,12 @@ begin
   LHtml := TStringBuilder.Create;
   try
     LHtml.Append('  <div class="section">' + sLineBreak);
-    LHtml.Append('    <h2>Análise de Erros</h2>' + sLineBreak);
+    LHtml.Append('    <h2>AnÃ¡lise de Erros</h2>' + sLineBreak);
     
     if Length(LErrorData) > 0 then
     begin
       LHtml.Append('    <table>' + sLineBreak);
-      LHtml.Append('      <tr><th>Tipo de Erro</th><th>Quantidade</th><th>Percentual</th><th>Primeira Ocorrência</th></tr>' + sLineBreak);
+      LHtml.Append('      <tr><th>Tipo de Erro</th><th>Quantidade</th><th>Percentual</th><th>Primeira OcorrÃªncia</th></tr>' + sLineBreak);
       
       for LError in LErrorData do
       begin
@@ -487,7 +501,7 @@ begin
     end
     else
     begin
-      LHtml.Append('    <p class="success">Nenhum erro encontrado no período analisado.</p>' + sLineBreak);
+      LHtml.Append('    <p class="success">Nenhum erro encontrado no perÃ­odo analisado.</p>' + sLineBreak);
     end;
     
     LHtml.Append('  </div>' + sLineBreak);
@@ -502,8 +516,8 @@ function THtmlReportGenerator.GenerateTrendSection: string;
 begin
   Result := 
     '  <div class="section">' + sLineBreak +
-    '    <h2>Análise de Tendências</h2>' + sLineBreak +
-    '    <p>Gráficos de tendência serão implementados...</p>' + sLineBreak +
+    '    <h2>AnÃ¡lise de TendÃªncias</h2>' + sLineBreak +
+    '    <p>GrÃ¡ficos de tendÃªncia serÃ£o implementados...</p>' + sLineBreak +
     '  </div>' + sLineBreak;
 end;
 
@@ -519,7 +533,7 @@ begin
   LHtml := TStringBuilder.Create;
   try
     LHtml.Append('  <div class="section">' + sLineBreak);
-    LHtml.Append('    <h2>Recomendações de Otimização</h2>' + sLineBreak);
+    LHtml.Append('    <h2>RecomendaÃ§Ãµes de OtimizaÃ§Ã£o</h2>' + sLineBreak);
     
     for LRecommendation in LRecommendations do
     begin
@@ -534,9 +548,9 @@ begin
       LHtml.AppendFormat(
         '    <div class="metric %s">' + sLineBreak +
         '      <h4>%s (Prioridade: %d)</h4>' + sLineBreak +
-        '      <p><strong>Descrição:</strong> %s</p>' + sLineBreak +
+        '      <p><strong>DescriÃ§Ã£o:</strong> %s</p>' + sLineBreak +
         '      <p><strong>Impacto Esperado:</strong> %s</p>' + sLineBreak +
-        '      <p><strong>Implementação:</strong> %s</p>' + sLineBreak +
+        '      <p><strong>ImplementaÃ§Ã£o:</strong> %s</p>' + sLineBreak +
         '    </div>' + sLineBreak,
         [LCssClass,
          LRecommendation.Category, LRecommendation.Priority,
@@ -554,19 +568,19 @@ end;
 
 function THtmlReportGenerator.GenerateChart(const AData: TArray<TTrendData>; const ATitle: string): string;
 begin
-  // Implementação de gráficos seria feita aqui
-  Result := Format('<div class="chart"><h3>%s</h3><p>Gráfico será implementado</p></div>', [ATitle]);
+  // ImplementaÃ§Ã£o de grÃ¡ficos seria feita aqui
+  Result := Format('<div class="chart"><h3>%s</h3><p>GrÃ¡fico serÃ¡ implementado</p></div>', [ATitle]);
 end;
 
 function THtmlReportGenerator.GetErrorReportData: TArray<TErrorReportData>;
 begin
-  // Implementar análise de erros baseada nas métricas
+  // Implementar anÃ¡lise de erros baseada nas mÃ©tricas
   SetLength(Result, 0);
 end;
 
 function THtmlReportGenerator.GetPerformanceData: TPerformanceReportData;
 begin
-  // Implementar extração de dados de performance das métricas
+  // Implementar extraÃ§Ã£o de dados de performance das mÃ©tricas
   FillChar(Result, SizeOf(Result), 0);
   Result.TotalValidations := 100; // Exemplo
   Result.SuccessRate := 0.95;
@@ -587,13 +601,13 @@ begin
   LRecommendation.Category := 'Cache';
   LRecommendation.Priority := 3;
   LRecommendation.Description := 'Aumentar o tamanho do cache para melhorar a taxa de hit';
-  LRecommendation.ExpectedImpact := 'Redução de 20-30% no tempo de validação';
+  LRecommendation.ExpectedImpact := 'ReduÃ§Ã£o de 20-30% no tempo de validaÃ§Ã£o';
   LRecommendation.ImplementationSteps := 'Configurar MaxCacheSize para 10000 entradas';
   Result[0] := LRecommendation;
   
   LRecommendation.Category := 'Threading';
   LRecommendation.Priority := 2;
-  LRecommendation.Description := 'Utilizar validação assíncrona para grandes volumes';
+  LRecommendation.Description := 'Utilizar validaÃ§Ã£o assÃ­ncrona para grandes volumes';
   LRecommendation.ExpectedImpact := 'Melhoria de 50-80% no throughput';
   LRecommendation.ImplementationSteps := 'Implementar TAsyncValidator para processamento em lote';
   Result[1] := LRecommendation;
@@ -670,13 +684,13 @@ end;
 function TJsonReportGenerator.CreateTrendsJson: string;
 begin
   Result := '[]';
-  // Implementar dados de tendências
+  // Implementar dados de tendÃªncias
 end;
 
 function TJsonReportGenerator.CreateRecommendationsJson: string;
 begin
   Result := '[]';
-  // Implementar recomendações
+  // Implementar recomendaÃ§Ãµes
 end;
 
 { TCsvReportGenerator }
@@ -808,7 +822,7 @@ begin
     rfCSV: Result := TCsvReportGenerator.Create(AConfig, AMetrics);
     rfXML: Result := TXmlReportGenerator.Create(AConfig, AMetrics);
   else
-    raise Exception.Create('Formato de relatório não suportado');
+    raise Exception.Create('Formato de relatÃ³rio nÃ£o suportado');
   end;
 end;
 
@@ -835,13 +849,13 @@ end;
 
 procedure TReportScheduler.RemoveScheduledReport(const AReportId: string);
 begin
-  // Implementar remoção por ID
+  // Implementar remoÃ§Ã£o por ID
 end;
 
 procedure TReportScheduler.Start;
 begin
   FEnabled := True;
-  // Implementar timer para execução agendada
+  // Implementar timer para execuÃ§Ã£o agendada
 end;
 
 procedure TReportScheduler.Stop;
@@ -852,7 +866,7 @@ end;
 
 procedure TReportScheduler.ExecuteScheduledReports;
 begin
-  // Implementar execução dos relatórios agendados
+  // Implementar execuÃ§Ã£o dos relatÃ³rios agendados
 end;
 
 { TReportManager }
@@ -881,7 +895,7 @@ begin
     Result := LGenerator.Generate;
     LGenerator.SaveToFile(Result);
     
-    // Adicionar ao histórico
+    // Adicionar ao histÃ³rico
     FReportHistory.Add(Format('%s - %s', [FormatDateTime('dd/mm/yyyy hh:nn', Now), AConfig.Title]));
   finally
     LGenerator.Free;
@@ -894,9 +908,9 @@ var
 begin
   LConfig.ReportType := AType;
   LConfig.Format := AFormat;
-  LConfig.Period.StartDate := Now - 7; // Última semana
+  LConfig.Period.StartDate := Now - 7; // Ãšltima semana
   LConfig.Period.EndDate := Now;
-  LConfig.Title := 'Relatório Rápido';
+  LConfig.Title := 'RelatÃ³rio RÃ¡pido';
   LConfig.Author := 'JsonFlow4D';
   LConfig.IncludeCharts := False;
   LConfig.IncludeDetails := True;

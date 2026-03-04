@@ -1,4 +1,18 @@
-﻿unit JsonFlow.Converter.Dataset;
+﻿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
+unit JsonFlow.Converter.Dataset;
 
 interface
 
@@ -9,11 +23,11 @@ uses
   System.Generics.Collections,
   System.NetEncoding,
   Data.DB,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.Composer,
-  JsonFlow4D.Objects,
-  JsonFlow4D.Arrays,
-  JsonFlow4D.Value;
+  JsonFlow.Interfaces,
+  JsonFlow.Composer,
+  JsonFlow.Objects,
+  JsonFlow.Arrays,
+  JsonFlow.Value;
 
 type
   /// <summary>
@@ -37,7 +51,7 @@ type
   );
 
   /// <summary>
-  /// Opções para conversão Dataset → JSON
+  /// Opções para conversão Dataset ? JSON
   /// </summary>
   TDatasetToJSONOptions = record
     IncludeMetadata: Boolean;
@@ -74,7 +88,7 @@ type
   end;
 
   /// <summary>
-  /// Conversor principal Dataset ↔ JSON
+  /// Conversor principal Dataset ? JSON
   /// </summary>
   TJSONDatasetConverter = class
   private
@@ -94,13 +108,13 @@ type
     constructor Create(const AOptions: TDatasetToJSONOptions);
     destructor Destroy; override;
     
-    // Conversão Dataset → JSON
+    // Conversão Dataset ? JSON
     function DatasetToJSON(ADataset: TDataset): string;
     function DatasetToJSONArray(ADataset: TDataset): IJSONArray;
     function RecordToJSON(ADataset: TDataset): string;
     function RecordToJSONObject(ADataset: TDataset): IJSONObject;
     
-    // Conversão JSON → Dataset
+    // Conversão JSON ? Dataset
     procedure JSONToDataset(const AJSON: string; ADataset: TDataset; const AClearFirst: Boolean = True);
     procedure JSONArrayToDataset(AArray: IJSONArray; ADataset: TDataset; const AClearFirst: Boolean = True);
     procedure JSONObjectToRecord(AObject: IJSONObject; ADataset: TDataset);
@@ -129,7 +143,7 @@ type
   end;
 
   /// <summary>
-  /// Conversor para campos Blob → Base64
+  /// Conversor para campos Blob ? Base64
   /// </summary>
   TBlobToBase64Converter = class(TInterfacedObject, IFieldConverter)
   public

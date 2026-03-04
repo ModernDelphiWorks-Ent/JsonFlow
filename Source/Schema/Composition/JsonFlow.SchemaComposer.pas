@@ -1,4 +1,18 @@
-﻿unit JsonFlow.SchemaComposer;
+﻿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
+unit JsonFlow.SchemaComposer;
 
 interface
 
@@ -8,10 +22,10 @@ uses
   System.Variants,
   System.IOUtils,
   System.Generics.Collections,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.Composer,
-  JsonFlow4D.Objects,
-  JsonFlow4D.Arrays;
+  JsonFlow.Interfaces,
+  JsonFlow.Composer,
+  JsonFlow.Objects,
+  JsonFlow.Arrays;
 
 type
   // Estrutura para sugestões fluentes
@@ -182,10 +196,10 @@ type
 implementation
 
 uses
-  JsonFlow4D.Writer,
-  JsonFlow4D.Value,
-  JsonFlow4D.Reader,
-  JsonFlow4D.SchemaValidator;
+  JsonFlow.Writer,
+  JsonFlow.Value,
+  JsonFlow.Reader,
+  JsonFlow.SchemaValidator;
 
 constructor TJSONSchemaComposer.Create;
 begin

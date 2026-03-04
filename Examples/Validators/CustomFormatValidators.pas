@@ -1,4 +1,4 @@
-unit CustomFormatValidators;
+﻿unit CustomFormatValidators;
 
 {
   JsonFlow4D - Exemplos de Validadores de Formato Customizados
@@ -22,7 +22,7 @@ uses
   System.SysUtils,
   System.Classes,
   System.RegularExpressions,
-  JsonFlow4D.FormatRegistry;
+  JsonFlow.FormatRegistry;
 
 type
   // Validador de CPF brasileiro
@@ -85,8 +85,8 @@ procedure DemonstrateCustomValidators;
 implementation
 
 uses
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.Reader;
+  JsonFlow.Interfaces,
+  JsonFlow.Reader;
 
 { TCPFFormatValidator }
 

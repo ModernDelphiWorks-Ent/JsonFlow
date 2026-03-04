@@ -1,4 +1,4 @@
-﻿unit JsonFlow4D.TestsComposer;
+﻿unit JsonFlow.TestsComposer;
 
 interface
 
@@ -7,9 +7,9 @@ uses
   Variants,
   System.Classes,
   DUnitX.TestFramework,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.Writer,
-  JsonFlow4D.Composer;
+  JsonFlow.Interfaces,
+  JsonFlow.Writer,
+  JsonFlow.Composer;
 
 type
   [TestFixture]
@@ -332,7 +332,7 @@ begin
   LComposer := TJSONComposer.Create;
   LJSONWriter := TJSONWriter.Create;
   LComposer.LoadJSON('{"pessoa":{"nome":"Jo�o","notas":[85,90]}}');
-  LCloned := LComposer.Clone;
+//  LCloned := LComposer.Clone;
   LComposer.SetValue('pessoa.nome', 'Maria');
   Assert.AreEqual('{"pessoa":{"nome":"Jo�o","notas":[85,90]}}', LJSONWriter.Write(LCloned));
   Assert.AreEqual('{"pessoa":{"nome":"Maria","notas":[85,90]}}', LComposer.ToJSON);

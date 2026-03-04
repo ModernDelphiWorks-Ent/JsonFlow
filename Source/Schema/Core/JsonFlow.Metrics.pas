@@ -1,3 +1,17 @@
+Ôªø{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
 unit JsonFlow.Metrics;
 
 interface
@@ -11,7 +25,7 @@ uses
 
 type
   /// <summary>
-  /// Estrutura para armazenar dados de uma validaÁ„o individual
+  /// Estrutura para armazenar dados de uma valida√ß√£o individual
   /// </summary>
   TValidationRecord = record
     Timestamp: TDateTime;
@@ -22,8 +36,8 @@ type
   end;
 
   /// <summary>
-  /// Classe para coleta e an·lise de mÈtricas de validaÁ„o
-  /// Fornece estatÌsticas detalhadas sobre performance e uso
+  /// Classe para coleta e an√°lise de m√©tricas de valida√ß√£o
+  /// Fornece estat√≠sticas detalhadas sobre performance e uso
   /// </summary>
   TValidationMetrics = class
   private
@@ -45,7 +59,7 @@ type
     destructor Destroy; override;
     
     /// <summary>
-    /// Registra uma validaÁ„o executada
+    /// Registra uma valida√ß√£o executada
     /// </summary>
     procedure RecordValidation(ASuccess: Boolean; AExecutionTime: Int64; 
       ASchemaHash: Cardinal = 0; AErrorCount: Integer = 0);
@@ -61,12 +75,12 @@ type
     procedure RecordCacheMiss;
     
     /// <summary>
-    /// Reseta todas as mÈtricas
+    /// Reseta todas as m√©tricas
     /// </summary>
     procedure Reset;
     
     /// <summary>
-    /// Retorna a taxa de sucesso das validaÁıes (0-100)
+    /// Retorna a taxa de sucesso das valida√ß√µes (0-100)
     /// </summary>
     function GetSuccessRate: Double;
     
@@ -76,42 +90,42 @@ type
     function GetCacheHitRate: Double;
     
     /// <summary>
-    /// Retorna o tempo mÈdio de execuÁ„o em milissegundos
+    /// Retorna o tempo m√©dio de execu√ß√£o em milissegundos
     /// </summary>
     function GetAverageExecutionTime: Double;
     
     /// <summary>
-    /// Retorna o tempo mediano de execuÁ„o em milissegundos
+    /// Retorna o tempo mediano de execu√ß√£o em milissegundos
     /// </summary>
     function GetMedianExecutionTime: Int64;
     
     /// <summary>
-    /// Retorna o percentil 95 do tempo de execuÁ„o
+    /// Retorna o percentil 95 do tempo de execu√ß√£o
     /// </summary>
     function GetP95ExecutionTime: Int64;
     
     /// <summary>
-    /// Retorna o n˙mero de validaÁıes por segundo
+    /// Retorna o n√∫mero de valida√ß√µes por segundo
     /// </summary>
     function GetValidationsPerSecond: Double;
     
     /// <summary>
-    /// Retorna estatÌsticas dos ˙ltimos N minutos
+    /// Retorna estat√≠sticas dos √∫ltimos N minutos
     /// </summary>
     function GetRecentStats(AMinutes: Integer): string;
     
     /// <summary>
-    /// Gera um relatÛrio completo das mÈtricas
+    /// Gera um relat√≥rio completo das m√©tricas
     /// </summary>
     function GenerateReport: string;
     
     /// <summary>
-    /// Gera relatÛrio em formato JSON
+    /// Gera relat√≥rio em formato JSON
     /// </summary>
     function GenerateJSONReport: string;
     
     /// <summary>
-    /// Exporta mÈtricas para arquivo CSV
+    /// Exporta m√©tricas para arquivo CSV
     /// </summary>
     procedure ExportToCSV(const AFileName: string);
     
@@ -125,7 +139,7 @@ type
   end;
 
   /// <summary>
-  /// Singleton para acesso global ‡s mÈtricas
+  /// Singleton para acesso global √†s m√©tricas
   /// </summary>
   TGlobalMetrics = class
   private
@@ -149,7 +163,7 @@ begin
   inherited;
   FLock := TCriticalSection.Create;
   FValidationHistory := TList<TValidationRecord>.Create;
-  FMaxHistorySize := 10000; // Manter ˙ltimas 10k validaÁıes
+  FMaxHistorySize := 10000; // Manter √∫ltimas 10k valida√ß√µes
   FStartTime := Now;
   Reset;
 end;
@@ -176,7 +190,7 @@ begin
     else
       Inc(FFailedValidations);
     
-    // Adicionar ao histÛrico
+    // Adicionar ao hist√≥rico
     LRecord.Timestamp := Now;
     LRecord.Success := ASuccess;
     LRecord.ExecutionTime := AExecutionTime;
@@ -185,7 +199,7 @@ begin
     
     FValidationHistory.Add(LRecord);
     
-    // Limpar registros antigos se necess·rio
+    // Limpar registros antigos se necess√°rio
     CleanupOldRecords;
   finally
     FLock.Leave;
@@ -353,7 +367,7 @@ begin
         Inc(LRecentSuccesses);
     end;
     
-    Result := Format('⁄ltimos %d minutos: %d validaÁıes, %.1f%% sucesso, %.1fms tempo mÈdio',
+    Result := Format('√öltimos %d minutos: %d valida√ß√µes, %.1f%% sucesso, %.1fms tempo m√©dio',
       [AMinutes, LRecentValidations, 
        IfThen(LRecentValidations > 0, (LRecentSuccesses / LRecentValidations) * 100, 0),
        IfThen(LRecentValidations > 0, LRecentTime / LRecentValidations, 0)]);
@@ -373,20 +387,20 @@ begin
     try
       LUptime := SecondsBetween(Now, FStartTime);
       
-      LBuilder.AppendLine('=== RELAT”RIO DE M…TRICAS DE VALIDA«√O ===');
+      LBuilder.AppendLine('=== RELAT√ìRIO DE M√âTRICAS DE VALIDA√á√ÉO ===');
       LBuilder.AppendLine('');
-      LBuilder.AppendLine('ESTATÕSTICAS GERAIS:');
-      LBuilder.AppendFormat('  Total de validaÁıes: %d', [FTotalValidations]).AppendLine;
-      LBuilder.AppendFormat('  ValidaÁıes bem-sucedidas: %d', [FSuccessfulValidations]).AppendLine;
-      LBuilder.AppendFormat('  ValidaÁıes com falha: %d', [FFailedValidations]).AppendLine;
+      LBuilder.AppendLine('ESTAT√çSTICAS GERAIS:');
+      LBuilder.AppendFormat('  Total de valida√ß√µes: %d', [FTotalValidations]).AppendLine;
+      LBuilder.AppendFormat('  Valida√ß√µes bem-sucedidas: %d', [FSuccessfulValidations]).AppendLine;
+      LBuilder.AppendFormat('  Valida√ß√µes com falha: %d', [FFailedValidations]).AppendLine;
       LBuilder.AppendFormat('  Taxa de sucesso: %.2f%%', [GetSuccessRate]).AppendLine;
       LBuilder.AppendLine('');
       
       LBuilder.AppendLine('PERFORMANCE:');
-      LBuilder.AppendFormat('  Tempo mÈdio de execuÁ„o: %.2fms', [GetAverageExecutionTime]).AppendLine;
+      LBuilder.AppendFormat('  Tempo m√©dio de execu√ß√£o: %.2fms', [GetAverageExecutionTime]).AppendLine;
       LBuilder.AppendFormat('  Tempo mediano: %dms', [GetMedianExecutionTime]).AppendLine;
-      LBuilder.AppendFormat('  P95 tempo de execuÁ„o: %dms', [GetP95ExecutionTime]).AppendLine;
-      LBuilder.AppendFormat('  ValidaÁıes por segundo: %.2f', [GetValidationsPerSecond]).AppendLine;
+      LBuilder.AppendFormat('  P95 tempo de execu√ß√£o: %dms', [GetP95ExecutionTime]).AppendLine;
+      LBuilder.AppendFormat('  Valida√ß√µes por segundo: %.2f', [GetValidationsPerSecond]).AppendLine;
       LBuilder.AppendLine('');
       
       LBuilder.AppendLine('CACHE:');
@@ -397,8 +411,8 @@ begin
       
       LBuilder.AppendLine('SISTEMA:');
       LBuilder.AppendFormat('  Tempo de atividade: %.0f segundos', [LUptime]).AppendLine;
-      LBuilder.AppendFormat('  Registros no histÛrico: %d', [FValidationHistory.Count]).AppendLine;
-      LBuilder.AppendFormat('  Limite do histÛrico: %d', [FMaxHistorySize]).AppendLine;
+      LBuilder.AppendFormat('  Registros no hist√≥rico: %d', [FValidationHistory.Count]).AppendLine;
+      LBuilder.AppendFormat('  Limite do hist√≥rico: %d', [FMaxHistorySize]).AppendLine;
       
       Result := LBuilder.ToString;
     finally
@@ -440,7 +454,7 @@ begin
     AssignFile(LFile, AFileName);
     Rewrite(LFile);
     try
-      // CabeÁalho
+      // Cabe√ßalho
       Writeln(LFile, 'Timestamp,Success,ExecutionTime,SchemaHash,ErrorCount');
       
       // Dados

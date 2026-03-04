@@ -1,10 +1,10 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{528F7AE6-6DF2-453A-A1C4-A4BB761E9894}</ProjectGuid>
-        <MainSource>JsonFlow4D.Schema.Tests.dpr</MainSource>
+        <MainSource>JsonFlow.Jons.Tests.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
-        <ProjectName Condition="'$(ProjectName)'==''">JsonFlow4D.Schema.Tests</ProjectName>
+        <ProjectName Condition="'$(ProjectName)'==''">JsonFlow.Jons.Tests</ProjectName>
         <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Console</AppType>
         <FrameworkType>None</FrameworkType>
@@ -53,12 +53,13 @@
         <DCC_N>false</DCC_N>
         <DCC_S>false</DCC_S>
         <DCC_ImageBase>00400000</DCC_ImageBase>
-        <SanitizedProjectName>JsonFlow4D_Schema_Tests</SanitizedProjectName>
+        <SanitizedProjectName>JsonFlow_Jons_Tests</SanitizedProjectName>
         <VerInfo_Locale>1046</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;CFBundleName=</VerInfo_Keys>
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
+        <DCC_UnitSearchPath>..\..\..\JsonFlow\Source;..\..\..\JsonFlow\Source\JSON;..\..\..\JsonFlow\Source\JSON\Composition;..\..\..\JsonFlow\Source\JSON\Core;..\..\..\JsonFlow\Source\JSON\IO;..\..\..\JsonFlow\Source\JSON\Middleware;..\..\..\JsonFlow\Source\Schema;..\..\..\JsonFlow\Source\Schema\IO;..\..\..\JsonFlow\Source\Schema\Core;..\..\..\JsonFlow\Source\Schema\Composition;..\..\..\JsonFlow\Source\Schema\Validators;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
@@ -88,19 +89,27 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <Icon_MainIcon>JsonFlow.Converters.Tests_Icon.ico</Icon_MainIcon>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <Manifest_File>(None)</Manifest_File>
+        <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="Composition\JsonFlow4D.TestsSchemaNavigator.pas"/>
-        <DCCReference Include="Core\JsonFlow4D.TestsSchemaComposer.pas"/>
-        <DCCReference Include="Core\JsonFlow4D.TestsSchemaComposerDuplicate.pas"/>
-        <DCCReference Include="Core\JsonFlow4D.TestsShemaComposer.pas"/>
-        <DCCReference Include="IO\JsonFlow4D.TestsSchemaReader.pas"/>
-        <DCCReference Include="Validators\JsonFlow4D.TestsCustomFormats.pas"/>
-        <DCCReference Include="Validators\JsonFlow4D.TestsSchemaValidator.pas"/>
-        <DCCReference Include="Validators\JsonFlow4D.TestsSchemaValidatorNew.pas"/>
+        <DCCReference Include="Composition\JsonFlow.TestsArrays.pas"/>
+        <DCCReference Include="Composition\JsonFlow.TestsComposer.pas"/>
+        <DCCReference Include="Composition\JsonFlow.TestsObjects.pas"/>
+        <DCCReference Include="Composition\JsonFlow.TestsPair.pas"/>
+        <DCCReference Include="Core\JsonFlow.Tests.Converters.pas"/>
+        <DCCReference Include="Core\JsonFlow.Tests.pas"/>
+        <DCCReference Include="Core\JsonFlow.TestsPerformanceOptimizations.pas"/>
+        <DCCReference Include="Core\JsonFlow.TestsRecursivityFix.pas"/>
+        <DCCReference Include="Core\JsonFlow.TestsValue.pas"/>
+        <DCCReference Include="IO\JsonFlow.TestsNavigator.pas"/>
+        <DCCReference Include="IO\JsonFlow.TestsReader.pas"/>
+        <DCCReference Include="IO\JsonFlow.TestsSerializer.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -119,8 +128,14 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">JsonFlow4D.Schema.Tests.dpr</Source>
+                    <Source Name="MainSource">JsonFlow.Jons.Tests.dpr</Source>
                 </Source>
+                <Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k290.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp290.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k290.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp290.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>
                 <Platform value="Win32">True</Platform>
@@ -142,9 +157,9 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="JsonFlow4D.Schema.Tests.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="JsonFlow.Jons.Tests.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
-                        <RemoteName>JsonFlow4D.Schema.Tests.exe</RemoteName>
+                        <RemoteName>JsonFlow.Jons.Tests.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

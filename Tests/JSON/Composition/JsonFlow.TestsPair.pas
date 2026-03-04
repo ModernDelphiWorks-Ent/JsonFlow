@@ -1,13 +1,13 @@
-﻿unit JsonFlow4D.TestsPair;
+﻿unit JsonFlow.TestsPair;
 
 interface
 
 uses
   System.SysUtils,
   DUnitX.TestFramework,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.Value,
-  JsonFlow4D.Pair;
+  JsonFlow.Interfaces,
+  JsonFlow.Value,
+  JsonFlow.Pair;
 
 type
   [TestFixture]

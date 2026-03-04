@@ -1,3 +1,17 @@
+﻿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
 unit JsonFlow.SchemaReader;
 
 interface
@@ -7,8 +21,8 @@ uses
   System.Classes,
   System.IOUtils,
   System.StrUtils,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.Reader;
+  JsonFlow.Interfaces,
+  JsonFlow.Reader;
 
 type
   TJSONSchemaReader = class(TInterfacedObject, IJSONSchemaReader)
@@ -38,7 +52,7 @@ type
 implementation
 
 uses
-  JsonFlow4D.SchemaValidator;
+  JsonFlow.SchemaValidator;
 
 constructor TJSONSchemaReader.Create;
 begin
@@ -96,7 +110,7 @@ end;
 procedure TJSONSchemaReader._CreateValidator(const AVersion: TJsonSchemaVersion);
 begin
   if Assigned(FValidator) then
-    FValidator := nil; // Liberar refer�ncia anterior
+    FValidator := nil; // Liberar referência anterior
   FValidator := TJSONSchemaValidator.Create(AVersion);
 end;
 

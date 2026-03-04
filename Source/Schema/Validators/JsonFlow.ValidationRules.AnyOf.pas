@@ -1,18 +1,32 @@
-﻿unit JsonFlow.ValidationRules.AnyOf;
+﻿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
+unit JsonFlow.ValidationRules.AnyOf;
 
 interface
 
 uses
   System.SysUtils, System.Classes, System.Generics.Collections,
-  JsonFlow4D.Interfaces, JsonFlow4D.ValidationEngine,
-  JsonFlow4D.ValidationRules.Base,
-  JsonFlow4D.ValidationRules.Required,
-  JsonFlow4D.ValidationRules.Properties,
-  JsonFlow4D.ValidationRules.MinLength,
-  JsonFlow4D.ValidationRules.MaxLength,
-  JsonFlow4D.ValidationRules.Minimum,
-  JsonFlow4D.ValidationRules.Maximum,
-  JsonFlow4D.ValidationRules.Consts;
+  JsonFlow.Interfaces, JsonFlow.ValidationEngine,
+  JsonFlow.ValidationRules.Base,
+  JsonFlow.ValidationRules.Required,
+  JsonFlow.ValidationRules.Properties,
+  JsonFlow.ValidationRules.MinLength,
+  JsonFlow.ValidationRules.MaxLength,
+  JsonFlow.ValidationRules.Minimum,
+  JsonFlow.ValidationRules.Maximum,
+  JsonFlow.ValidationRules.Consts;
 
 type
   // Regra de validação anyOf - pelo menos uma das subregras deve ser válida
@@ -28,7 +42,7 @@ type
 implementation
 
 uses
-  JsonFlow4D.ValidationRules.Types;
+  JsonFlow.ValidationRules.Types;
 
 { TAnyOfRule }
 

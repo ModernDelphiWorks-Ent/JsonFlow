@@ -1,7 +1,21 @@
+﻿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
 unit JsonFlow.FormatValidators;
 
 // Unidade centralizada para registro de todos os validadores de formato
-// Esta unidade substitui o registro manual no JsonFlow4D.FormatRegistry.pas
+// Esta unidade substitui o registro manual no JsonFlow.FormatRegistry.pas
 
 interface
 
@@ -21,14 +35,14 @@ procedure RegisterBuiltInIpv6Validator;
 implementation
 
 uses
-  JsonFlow4D.FormatValidators.Email,
-  JsonFlow4D.FormatValidators.Uri,
-  JsonFlow4D.FormatValidators.Date,
-  JsonFlow4D.FormatValidators.Time,
-  JsonFlow4D.FormatValidators.DateTime,
-  JsonFlow4D.FormatValidators.Uuid,
-  JsonFlow4D.FormatValidators.Ipv4,
-  JsonFlow4D.FormatValidators.Ipv6;
+  JsonFlow.FormatValidators.Email,
+  JsonFlow.FormatValidators.Uri,
+  JsonFlow.FormatValidators.Date,
+  JsonFlow.FormatValidators.Time,
+  JsonFlow.FormatValidators.DateTime,
+  JsonFlow.FormatValidators.Uuid,
+  JsonFlow.FormatValidators.Ipv4,
+  JsonFlow.FormatValidators.Ipv6;
 
 // Registra todos os validadores built-in
 procedure RegisterAllFormatValidators;
@@ -46,42 +60,42 @@ end;
 // Procedimentos individuais para registro seletivo
 procedure RegisterBuiltInEmailValidator;
 begin
-  JsonFlow4D.FormatValidators.Email.RegisterEmailValidator;
+  JsonFlow.FormatValidators.Email.RegisterEmailValidator;
 end;
 
 procedure RegisterBuiltInUriValidator;
 begin
-  JsonFlow4D.FormatValidators.Uri.RegisterUriValidator;
+  JsonFlow.FormatValidators.Uri.RegisterUriValidator;
 end;
 
 procedure RegisterBuiltInDateValidator;
 begin
-  JsonFlow4D.FormatValidators.Date.RegisterDateValidator;
+  JsonFlow.FormatValidators.Date.RegisterDateValidator;
 end;
 
 procedure RegisterBuiltInTimeValidator;
 begin
-  JsonFlow4D.FormatValidators.Time.RegisterTimeValidator;
+  JsonFlow.FormatValidators.Time.RegisterTimeValidator;
 end;
 
 procedure RegisterBuiltInDateTimeValidator;
 begin
-  JsonFlow4D.FormatValidators.DateTime.RegisterDateTimeValidator;
+  JsonFlow.FormatValidators.DateTime.RegisterDateTimeValidator;
 end;
 
 procedure RegisterBuiltInUuidValidator;
 begin
-  JsonFlow4D.FormatValidators.Uuid.RegisterUuidValidator;
+  JsonFlow.FormatValidators.Uuid.RegisterUuidValidator;
 end;
 
 procedure RegisterBuiltInIpv4Validator;
 begin
-  JsonFlow4D.FormatValidators.Ipv4.RegisterIpv4Validator;
+  JsonFlow.FormatValidators.Ipv4.RegisterIpv4Validator;
 end;
 
 procedure RegisterBuiltInIpv6Validator;
 begin
-  JsonFlow4D.FormatValidators.Ipv6.RegisterIpv6Validator;
+  JsonFlow.FormatValidators.Ipv6.RegisterIpv6Validator;
 end;
 
 end.

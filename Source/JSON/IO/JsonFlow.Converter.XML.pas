@@ -1,4 +1,18 @@
-﻿unit JsonFlow.Converter.XML;
+﻿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
+unit JsonFlow.Converter.XML;
 
 interface
 
@@ -9,11 +23,11 @@ uses
   System.Generics.Collections,
   Xml.XMLIntf,
   Xml.XMLDoc,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.Composer,
-  JsonFlow4D.Objects,
-  JsonFlow4D.Arrays,
-  JsonFlow4D.Value;
+  JsonFlow.Interfaces,
+  JsonFlow.Composer,
+  JsonFlow.Objects,
+  JsonFlow.Arrays,
+  JsonFlow.Value;
 
 type
   /// <summary>
@@ -47,7 +61,7 @@ type
   );
 
   /// <summary>
-  /// Opções para conversão XML → JSON
+  /// Opções para conversão XML ? JSON
   /// </summary>
   TXMLToJSONOptions = record
     AttributeHandling: TAttributeHandling;
@@ -69,7 +83,7 @@ type
   end;
 
   /// <summary>
-  /// Opções para conversão JSON → XML
+  /// Opções para conversão JSON ? XML
   /// </summary>
   TJSONToXMLOptions = record
     RootElementName: string;
@@ -107,7 +121,7 @@ type
   end;
 
   /// <summary>
-  /// Conversor principal XML ↔ JSON
+  /// Conversor principal XML ? JSON
   /// </summary>
   TJSONXMLConverter = class
   private
@@ -133,13 +147,13 @@ type
     constructor Create(const AXMLToJSONOptions: TXMLToJSONOptions; const AJSONToXMLOptions: TJSONToXMLOptions);
     destructor Destroy; override;
     
-    // Conversão XML → JSON
+    // Conversão XML ? JSON
     function XMLToJSON(const AXML: string): string; overload;
     function XMLToJSON(AXMLDocument: IXMLDocument): string; overload;
     function XMLToJSON(AXMLNode: IXMLNode): string; overload;
     function XMLNodeToJSONObject(ANode: IXMLNode): IJSONObject;
     
-    // Conversão JSON → XML
+    // Conversão JSON ? XML
     function JSONToXML(const AJSON: string): string; overload;
     function JSONToXML(AJSONElement: IJSONElement): string; overload;
     function JSONToXMLDocument(const AJSON: string): IXMLDocument; overload;
@@ -939,7 +953,7 @@ end;
 function TMixedContentConverter.JSONToXML(AElement: IJSONElement; AParentNode: IXMLNode; const AElementName: string): IXMLNode;
 begin
   Result := AParentNode.AddChild(AElementName);
-  // TODO: Implementar conversão de conteúdo misto JSON → XML
+  // TODO: Implementar conversão de conteúdo misto JSON ? XML
 end;
 
 { TNamespaceConverter }

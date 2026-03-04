@@ -1,3 +1,17 @@
+Ôªø{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
 unit JsonFlow.Composer;
 
 interface
@@ -11,10 +25,10 @@ uses
   System.Generics.Collections,
   System.DateUtils,
   System.TimeSpan,
-  JsonFlow4D.Utils,
-  JsonFlow4D.Value,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.Navigator;
+  JsonFlow.Utils,
+  JsonFlow.Value,
+  JsonFlow.Interfaces,
+  JsonFlow.Navigator;
 
 type
   TJSONComposer = class(TInterfacedObject, IJSONComposer)
@@ -134,10 +148,10 @@ type
 implementation
 
 uses
-  JsonFlow4D.Objects,
-  JsonFlow4D.Arrays,
-  JsonFlow4D.Writer,
-  JsonFlow4D.Reader;
+  JsonFlow.Objects,
+  JsonFlow.Arrays,
+  JsonFlow.Writer,
+  JsonFlow.Reader;
 
 { TJSONComposer }
 
@@ -313,7 +327,7 @@ var
 begin
   LErrors := TList<String>.Create;
   try
-    // ValidaÁıes b·sicas
+    // Valida√ß√µes b√°sicas
     if not Assigned(FRoot) then
       LErrors.Add('No root element defined');
       
@@ -334,7 +348,7 @@ procedure TJSONComposer._UpdatePerformanceMetrics;
 begin
   FPerformanceInfo.LastModified := Now;
   FPerformanceInfo.OperationCount := FOperationCount;
-  // Estimativa simples de uso de memÛria
+  // Estimativa simples de uso de mem√≥ria
   FPerformanceInfo.MemoryUsage := FStack.Count * SizeOf(IJSONElement) + 
                                   FNameStack.Count * SizeOf(String);
 end;
@@ -1139,7 +1153,7 @@ begin
   Result := Self;
 end;
 
-// === IMPLEMENTA«√O DOS M…TODOS P⁄BLICOS DAS FASES 1-4 ===
+// === IMPLEMENTA√á√ÉO DOS M√âTODOS P√öBLICOS DAS FASES 1-4 ===
 
 // FASE 1: Sintaxe fluente moderna
 function TJSONComposer.StringValue(const AName, AValue: String): IJSONComposer;
@@ -1334,7 +1348,7 @@ var
 begin
   LValues := TList<Variant>.Create;
   try
-    // Sugestıes b·sicas baseadas no nome da chave
+    // Sugest√µes b√°sicas baseadas no nome da chave
     if AKey.Contains('name') or AKey.Contains('title') then
       LValues.Add('Sample Text')
     else if AKey.Contains('count') or AKey.Contains('age') or AKey.Contains('id') then
@@ -1387,7 +1401,7 @@ begin
   Result := FValidationErrors.ToArray;
 end;
 
-// FASE 4: Performance e recursos avanÁados
+// FASE 4: Performance e recursos avan√ßados
 function TJSONComposer.GetPerformanceMetrics: TPerformanceInfo;
 begin
   _UpdatePerformanceMetrics;
@@ -1396,11 +1410,11 @@ end;
 
 function TJSONComposer.OptimizeMemory: IJSONComposer;
 begin
-  // Limpa caches desnecess·rios
+  // Limpa caches desnecess√°rios
   FSuggestionCache.Clear;
   FValidationErrors.Clear;
   
-  // Force garbage collection (se necess·rio)
+  // Force garbage collection (se necess√°rio)
   if FDebugMode then
     AddLog('Memory optimization performed');
     
@@ -1410,7 +1424,7 @@ end;
 
 function TJSONComposer.EnableLazyLoading(AEnabled: Boolean): IJSONComposer;
 begin
-  // ImplementaÁ„o futura para lazy loading
+  // Implementa√ß√£o futura para lazy loading
   if FDebugMode then
   begin
     if AEnabled then

@@ -1,13 +1,13 @@
-﻿unit JsonFlow4D.TestsSchemaComposer;
+﻿unit JsonFlow.TestsSchemaComposerDuplicate;
 
 interface
 
 uses
   System.Classes, System.SysUtils, System.IOUtils, DUnitX.TestFramework,
-  JsonFlow4D.SchemaComposer,
-  JsonFlow4D.SchemaValidator,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.Objects;
+  JsonFlow.SchemaComposer,
+  JsonFlow.SchemaValidator,
+  JsonFlow.Interfaces,
+  JsonFlow.Objects;
 
 type
   [TestFixture]
@@ -175,8 +175,8 @@ type
 implementation
 
 uses
-  JsonFlow4D.Reader,
-  JsonFlow4D.Value,
+  JsonFlow.Reader,
+  JsonFlow.Value,
   System.Generics.Collections, System.Math, System.StrUtils;
 
 
@@ -651,7 +651,7 @@ begin
   // Configura o FValidator com o meta-schema
   if Assigned(FValidator) then
     FValidator.Free; // Libera o FValidator criado no SetUp, se existir
-  FValidator := TJSONSchemaValidator.Create(jsvDraft7, LMetaSchema);
+  FValidator := TJSONSchemaValidator.Create(jsvDraft7{, LMetaSchema});
   FValidator.ParseSchema(LMetaSchema);
 
   // Gera o schema com o composer

@@ -1,4 +1,18 @@
-﻿unit JsonFlow.Serializer;
+﻿{
+  ------------------------------------------------------------------------------
+  JsonFlow
+  Fluent and expressive JSON manipulation API for Delphi.
+
+  SPDX-License-Identifier: Apache-2.0
+  Copyright (c) 2025-2026 Isaque Pinheiro
+
+  Licensed under the Apache License, Version 2.0.
+  See the LICENSE file in the project root for full license information.
+  ------------------------------------------------------------------------------
+}
+
+{$include ../../JsonFlow.inc}
+unit JsonFlow.Serializer;
 
 interface
 
@@ -9,13 +23,13 @@ uses
   System.Classes,
   System.Variants,
   System.Generics.Collections,
-  JsonFlow4D.Utils,
-  JsonFlow4D.Interfaces,
-  JsonFlow4D.Value,
-  JsonFlow4D.Objects,
-  JsonFlow4D.Arrays,
-  JsonFlow4D.Serializer.CircularRef,
-  JsonFlow4D.Serializer.Attributes;
+  JsonFlow.Utils,
+  JsonFlow.Interfaces,
+  JsonFlow.Value,
+  JsonFlow.Objects,
+  JsonFlow.Arrays,
+  JsonFlow.Serializer.CircularRef,
+  JsonFlow.Serializer.Attributes;
 
 type
   /// <summary>
