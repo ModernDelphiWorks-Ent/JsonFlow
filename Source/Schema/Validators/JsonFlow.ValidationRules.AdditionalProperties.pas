@@ -12,6 +12,7 @@
 }
 
 {$include ../../JsonFlow.inc}
+
 unit JsonFlow.ValidationRules.AdditionalProperties;
 
 interface
@@ -20,6 +21,7 @@ uses
   System.SysUtils,
   System.Classes,
   System.Generics.Collections,
+  System.RegularExpressions,
   JsonFlow.Interfaces,
   JsonFlow.ValidationEngine,
   JsonFlow.ValidationRules.Base;
@@ -31,8 +33,13 @@ type
     FAllowAdditional: Boolean;
     FAdditionalSchema: IJSONElement;
     FDefinedProperties: TArray<string>;
+    FPatternProperties: TArray<string>;
+    function IsDefinedProperty(const APropertyName: string): Boolean;
   public
-    constructor Create(AAllowAdditional: Boolean; const AAdditionalSchema: IJSONElement = nil; const ADefinedProperties: TArray<string> = nil);
+    constructor Create(AAllowAdditional: Boolean;
+      const AAdditionalSchema: IJSONElement = nil;
+      const ADefinedProperties: TArray<string> = nil;
+      const APatternProperties: TArray<string> = nil);
     function Validate(const AValue: IJSONElement; const AContext: TObject): TValidationResult; override;
   end;
 
@@ -40,12 +47,40 @@ implementation
 
 { TAdditionalPropertiesRule }
 
-constructor TAdditionalPropertiesRule.Create(AAllowAdditional: Boolean; const AAdditionalSchema: IJSONElement; const ADefinedProperties: TArray<string>);
+constructor TAdditionalPropertiesRule.Create(AAllowAdditional: Boolean;
+  const AAdditionalSchema: IJSONElement;
+  const ADefinedProperties: TArray<string>;
+  const APatternProperties: TArray<string>);
 begin
   inherited Create('additionalProperties');
   FAllowAdditional := AAllowAdditional;
   FAdditionalSchema := AAdditionalSchema;
   FDefinedProperties := ADefinedProperties;
+  FPatternProperties := APatternProperties;
+end;
+
+function TAdditionalPropertiesRule.IsDefinedProperty(const APropertyName: string): Boolean;
+var
+  LDefinedProp: string;
+  LPattern: string;
+begin
+  for LDefinedProp in FDefinedProperties do
+  begin
+    if APropertyName = LDefinedProp then
+      Exit(True);
+  end;
+
+  for LPattern in FPatternProperties do
+  begin
+    try
+      if TRegEx.IsMatch(APropertyName, LPattern) then
+        Exit(True);
+    except
+      Exit(False);
+    end;
+  end;
+
+  Result := False;
 end;
 
 function TAdditionalPropertiesRule.Validate(const AValue: IJSONElement; const AContext: TObject): TValidationResult;
@@ -56,7 +91,6 @@ var
   LPropertyName: string;
   LPropertyValue: IJSONElement;
   LIsDefinedProperty: Boolean;
-  LDefinedProp: string;
   LAllErrors: TList<TValidationError>;
   LHasErrors: Boolean;
   LPairs: TArray<IJSONPair>;
@@ -71,7 +105,8 @@ begin
       'Value must be an object for additionalProperties validation',
       'non-object',
       'object',
-      'additionalProperties'
+      'additionalProperties',
+      LValidationContext.GetFullSchemaPath + '/additionalProperties'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -88,15 +123,7 @@ begin
       LPropertyName := LPairs[LFor].Key;
       
       // Verificar se é uma propriedade definida no esquema
-      LIsDefinedProperty := False;
-      for LDefinedProp in FDefinedProperties do
-      begin
-        if LPropertyName = LDefinedProp then
-        begin
-          LIsDefinedProperty := True;
-          Break;
-        end;
-      end;
+      LIsDefinedProperty := IsDefinedProperty(LPropertyName);
       
       // Se não é uma propriedade definida, é uma propriedade adicional
       if not LIsDefinedProperty then
@@ -110,7 +137,8 @@ begin
             Format('Additional property "%s" is not allowed', [LPropertyName]),
             'present',
             'not allowed',
-            'additionalProperties'
+            'additionalProperties',
+            LValidationContext.GetFullSchemaPath + '/additionalProperties'
           );
           LAllErrors.Add(LError);
         end
@@ -120,9 +148,20 @@ begin
           LPropertyValue := LObject.GetValue(LPropertyName);
           LValidationContext.PushProperty(LPropertyName);
           try
-            // Aqui seria necessário validar usando o esquema adicional
-            // Por simplicidade, assumimos que a validação é bem-sucedida
-            // Em uma implementação completa, seria necessário um validador recursivo
+            if Assigned(LValidationContext.Evaluator) then
+            begin
+              LValidationContext.PushSchemaSegment('additionalProperties');
+              try
+                var LSubResult := LValidationContext.Evaluator.Evaluate(LPropertyValue, FAdditionalSchema, LValidationContext);
+                if not LSubResult.IsValid then
+                begin
+                  LHasErrors := True;
+                  LAllErrors.AddRange(LSubResult.Errors);
+                end;
+              finally
+                LValidationContext.PopSchemaSegment;
+              end;
+            end;
           finally
             LValidationContext.PopProperty;
           end;

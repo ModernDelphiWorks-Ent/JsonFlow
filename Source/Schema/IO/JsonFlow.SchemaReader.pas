@@ -12,6 +12,7 @@
 }
 
 {$include ../../JsonFlow.inc}
+
 unit JsonFlow.SchemaReader;
 
 interface
@@ -22,7 +23,8 @@ uses
   System.IOUtils,
   System.StrUtils,
   JsonFlow.Interfaces,
-  JsonFlow.Reader;
+  JsonFlow.Reader,
+  JsonFlow.Value;
 
 type
   TJSONSchemaReader = class(TInterfacedObject, IJSONSchemaReader)
@@ -31,6 +33,8 @@ type
     FSchema: IJSONElement;
     FValidator: IJSONSchemaValidator;
     FReader: IJSONReader;
+    FDetectVersionWarning: string;
+    FLastSchemaFileName: string;
     function _DetectVersion(const AElement: IJSONElement): TJsonSchemaVersion;
     procedure _CreateValidator(const AVersion: TJsonSchemaVersion);
     function _LoadSchema(const AJson: string): Boolean;
@@ -74,6 +78,7 @@ var
   LSchemaValueObj: IJSONValue;
   LSchema: string;
 begin
+  FDetectVersionWarning := '';
   Result := jsvDraft7; // Default
   
   if not Assigned(AElement) then
@@ -101,6 +106,17 @@ begin
             Result := jsvDraft201909
           else if Pos('2020-12', LSchema) > 0 then
             Result := jsvDraft202012;
+
+          if (Result = jsvDraft7) and
+             (Pos('draft-07', LSchema) = 0) and
+             (Pos('2019-09', LSchema) = 0) and
+             (Pos('2020-12', LSchema) = 0) and
+             (Pos('draft-06', LSchema) = 0) and
+             (Pos('draft-04', LSchema) = 0) and
+             (Pos('draft-03', LSchema) = 0) then
+          begin
+            FDetectVersionWarning := Format('Unknown schema version "%s". Defaulting to Draft 7.', [LSchema]);
+          end;
         end;
       end;
     end;
@@ -119,10 +135,18 @@ var
   LVersion: TJsonSchemaVersion;
   LOldErrors: TArray<TValidationError>;
   LFor: Integer;
+  LObj: IJSONObject;
 begin
   Result := True;
   try
     FSchema := FReader.Read(AJson);
+
+    if (FLastSchemaFileName <> '') and Supports(FSchema, IJSONObject, LObj) then
+    begin
+      if not LObj.ContainsKey('$id') then
+        LObj.Add('$id', TJSONValueString.Create(FLastSchemaFileName));
+    end;
+
     LVersion := _DetectVersion(FSchema);
     
     if LVersion <> FValidator.GetVersion then
@@ -137,6 +161,9 @@ begin
     end;
     
     FValidator.ParseSchema(FSchema);
+
+    if FDetectVersionWarning <> '' then
+      FValidator.AddError('', FDetectVersionWarning, '', 'Draft 7', '$schema', -1, -1, '');
   except
     on E: Exception do
     begin
@@ -155,7 +182,12 @@ end;
 
 function TJSONSchemaReader.LoadFromFile(const AFileName: string): Boolean;
 begin
-  Result := _LoadSchema(TFile.ReadAllText(AFileName));
+  FLastSchemaFileName := AFileName;
+  try
+    Result := _LoadSchema(TFile.ReadAllText(AFileName));
+  finally
+    FLastSchemaFileName := '';
+  end;
 end;
 
 function TJSONSchemaReader.LoadFromString(const AJsonString: string): Boolean;

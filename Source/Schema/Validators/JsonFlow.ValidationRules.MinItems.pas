@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -57,7 +57,8 @@ begin
       'Value must be an array for minItems validation',
       'non-array',
       'array',
-      'minItems'
+      'minItems',
+      LValidationContext.GetFullSchemaPath + '/minItems'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -74,7 +75,8 @@ begin
       Format('Array has %d items, minimum required is %d', [LItemCount, FMinItems]),
       IntToStr(LItemCount),
       IntToStr(FMinItems),
-      'minItems'
+      'minItems',
+      LValidationContext.GetFullSchemaPath + '/minItems'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
   end;

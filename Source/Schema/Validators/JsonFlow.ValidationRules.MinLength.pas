@@ -12,6 +12,7 @@
 }
 
 {$include ../../JsonFlow.inc}
+
 unit JsonFlow.ValidationRules.MinLength;
 
 interface
@@ -64,7 +65,8 @@ begin
       'Value must be a string or array for minLength validation',
       'invalid type',
       'string or array',
-      'minLength'
+      'minLength',
+      LValidationContext.GetFullSchemaPath + '/minLength'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -79,7 +81,8 @@ begin
       Format('Length %d is less than minimum length %d', [LLength, FMinLength]),
       IntToStr(LLength),
       IntToStr(FMinLength),
-      'minLength'
+      'minLength',
+      LValidationContext.GetFullSchemaPath + '/minLength'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
   end;

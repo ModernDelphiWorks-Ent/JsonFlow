@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -57,7 +57,8 @@ begin
       'Value must be a primitive for const validation',
       'non-primitive',
       'primitive',
-      'const'
+      'const',
+      LValidationContext.GetFullSchemaPath + '/const'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -86,7 +87,8 @@ begin
       Format('Value "%s" does not match constant "%s"', [LValueStr, FConstValue]),
       LValueStr,
       FConstValue,
-      'const'
+      'const',
+      LValidationContext.GetFullSchemaPath + '/const'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
   end;

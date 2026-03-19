@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -57,7 +57,8 @@ begin
       'Value must be a number for multipleOf validation',
       'non-number',
       'number',
-      'multipleOf'
+      'multipleOf',
+      LValidationContext.GetFullSchemaPath + '/multipleOf'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -70,7 +71,8 @@ begin
       'Value must be a number for multipleOf validation',
       'non-number',
       'number',
-      'multipleOf'
+      'multipleOf',
+      LValidationContext.GetFullSchemaPath + '/multipleOf'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -86,7 +88,8 @@ begin
       Format('Value %g is not a multiple of %g', [LValue.AsFloat, FDivisor]),
       FloatToStr(LValue.AsFloat),
       FloatToStr(FDivisor),
-      'multipleOf'
+      'multipleOf',
+      LValidationContext.GetFullSchemaPath + '/multipleOf'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
   end;

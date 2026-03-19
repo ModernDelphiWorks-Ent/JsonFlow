@@ -12,6 +12,7 @@
 }
 
 {$include ../../JsonFlow.inc}
+
 unit JsonFlow.FormatRegistry;
 
 {
@@ -174,6 +175,7 @@ end;
 class constructor TFormatRegistry.Create;
 begin
   FValidators := TDictionary<string, IFormatValidator>.Create;
+  RegisterBuiltInFormatValidators;
 end;
 
 class destructor TFormatRegistry.Destroy;

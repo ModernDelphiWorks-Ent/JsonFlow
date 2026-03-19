@@ -1,6 +1,6 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{528F7AE6-6DF2-453A-A1C4-A4BB761E9894}</ProjectGuid>
+        <ProjectGuid>{7C6F2EC5-AA1D-453B-9C33-49ED20D7A24E}</ProjectGuid>
         <MainSource>JsonFlow.Schema.Tests.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
@@ -16,11 +16,6 @@
     </PropertyGroup>
     <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
         <Base_Win32>true</Base_Win32>
-        <CfgParent>Base</CfgParent>
-        <Base>true</Base>
-    </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
-        <Base_Win64>true</Base_Win64>
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
@@ -59,17 +54,15 @@
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
-        <DCC_UnitSearchPath>..\..\..\JsonFlow\Source;..\..\..\JsonFlow\Source\JSON;..\..\..\JsonFlow\Source\JSON\Composition;..\..\..\JsonFlow\Source\JSON\Core;..\..\..\JsonFlow\Source\JSON\IO;..\..\..\JsonFlow\Source\JSON\Middleware;..\..\..\JsonFlow\Source\Schema;..\..\..\JsonFlow\Source\Schema\IO;..\..\..\JsonFlow\Source\Schema\Core;..\..\..\JsonFlow\Source\Schema\Composition;..\..\..\JsonFlow\Source\Schema\Validators;..\..\..\JsonFlow\Source\Schema\Validators\Format;..\..\..\JsonFlow\Source\Schema\Validators\Format\Brazil;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\..\JsonFlow\Source;..\..\..\JsonFlow\Source\Addons;..\..\..\JsonFlow\Source\JSON;..\..\..\JsonFlow\Source\Schema;..\..\..\JsonFlow\Source\Addons\Composition;..\..\..\JsonFlow\Source\Addons\Validation;..\..\..\JsonFlow\Source\JSON\Composition;..\..\..\JsonFlow\Source\JSON\Core;..\..\..\JsonFlow\Source\JSON\IO;..\..\..\JsonFlow\Source\JSON\Middleware;..\..\..\JsonFlow\Source\Schema\Composition;..\..\..\JsonFlow\Source\Schema\Core;..\..\..\JsonFlow\Source\Schema\IO;..\..\..\JsonFlow\Source\Schema\Validators;..\..\..\JsonFlow\Source\Schema\Validators\Format;..\..\..\JsonFlow\Source\Schema\Validators\Format\Brazil;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
         <BT_BuildType>Debug</BT_BuildType>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <Icon_MainIcon>JsonFlow.Converters.Tests_Icon.ico</Icon_MainIcon>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Base_Win64)'!=''">
-        <Icon_MainIcon>JsonFlow.Converters.Tests_Icon.ico</Icon_MainIcon>
+        <Manifest_File>(None)</Manifest_File>
+        <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
@@ -78,7 +71,8 @@
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <Icon_MainIcon>JsonFlow.Converters.Tests_Icon.ico</Icon_MainIcon>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
@@ -88,11 +82,8 @@
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-        <Icon_MainIcon>JsonFlow.Converters.Tests_Icon.ico</Icon_MainIcon>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <Manifest_File>(None)</Manifest_File>
-        <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -107,6 +98,16 @@
         <DCCReference Include="Validators\JsonFlow.TestsSchemaValidator.pas"/>
         <DCCReference Include="Validators\JsonFlow.TestsSchemaValidatorNew.pas"/>
         <DCCReference Include="..\..\Examples\Validators\CustomFormatValidators.pas"/>
+        <DCCReference Include="Validators\JsonFlow.TestsSchemaDeepValidationBaseline.pas"/>
+        <DCCReference Include="Validators\ObjectKeywords\JsonFlow.TestsSchemaObjectKeywordsDeep.pas"/>
+        <DCCReference Include="Validators\ObjectKeywords\JsonFlow.TestsSchemaObjectKeywordsLimits.pas"/>
+        <DCCReference Include="Validators\ArrayKeywords\JsonFlow.TestsSchemaArrayTupleItems.pas"/>
+        <DCCReference Include="Validators\ArrayKeywords\JsonFlow.TestsSchemaArrayContains.pas"/>
+        <DCCReference Include="Validators\ArrayKeywords\JsonFlow.TestsSchemaArrayLimitsAndUnique.pas"/>
+        <DCCReference Include="Validators\Combinators\JsonFlow.TestsSchemaCombinatorsAndConditionals.pas"/>
+        <DCCReference Include="Validators\Refs\JsonFlow.TestsSchemaRefs.pas"/>
+        <DCCReference Include="Validators\Diagnostics\JsonFlow.TestsSchemaSchemaPath.pas"/>
+        <DCCReference Include="Validators\Diagnostics\JsonFlow.TestsSchemaSchemaPathCombinators.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

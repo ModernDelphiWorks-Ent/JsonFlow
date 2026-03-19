@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -57,7 +57,8 @@ begin
       'Value must be an array for maxItems validation',
       'non-array',
       'array',
-      'maxItems'
+      'maxItems',
+      LValidationContext.GetFullSchemaPath + '/maxItems'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -74,7 +75,8 @@ begin
       Format('Array has %d items, maximum allowed is %d', [LItemCount, FMaxItems]),
       IntToStr(LItemCount),
       IntToStr(FMaxItems),
-      'maxItems'
+      'maxItems',
+      LValidationContext.GetFullSchemaPath + '/maxItems'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
   end;

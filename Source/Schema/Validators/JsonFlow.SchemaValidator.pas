@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -12,6 +12,7 @@
 }
 
 {$include ../../JsonFlow.inc}
+
 unit JsonFlow.SchemaValidator;
 
 {
@@ -39,10 +40,11 @@ uses
   System.SysUtils,
   System.Classes,
   System.Generics.Collections,
-  System.Diagnostics,
   System.TypInfo,
   System.Hash,
+  System.IOUtils,
   JsonFlow.Interfaces,
+  JsonFlow.SchemaNavigator,
   JsonFlow.ValidationEngine,
   JsonFlow.ValidationRules;
 
@@ -63,45 +65,16 @@ type
     HasCircularRefs: Boolean;
   end;
 
-  // Classes auxiliares simplificadas
-  TValidationMemoizer = class
-  private
-    FEnabled: Boolean;
-    FCacheSize: Integer;
-    FMaxCacheSize: Integer;
-    FHitCount: Integer;
-    FMissCount: Integer;
-    FCache: TDictionary<string, TValidationResult>;
-    FCacheKeys: TList<string>; // Para LRU eviction
-  public
-    constructor Create(AMaxCacheSize: Integer = 1000);
-    destructor Destroy; override;
-    property Enabled: Boolean read FEnabled write FEnabled;
-    property CacheSize: Integer read FCacheSize;
-    property MaxCacheSize: Integer read FMaxCacheSize write FMaxCacheSize;
-    property HitCount: Integer read FHitCount;
-    property MissCount: Integer read FMissCount;
-    function GetHitRatio: Double;
-    function TryGetCached(const AKey: string; out AResult: TValidationResult): Boolean;
-    procedure AddToCache(const AKey: string; const AResult: TValidationResult);
-    procedure Clear;
-    procedure EvictLRU;
-  end;
-
   TValidationVisitor = class
   private
-    FMemoizer: TValidationMemoizer;
   public
     constructor Create;
     destructor Destroy; override;
-    property Memoizer: TValidationMemoizer read FMemoizer;
     function Visit(const AElement: IJSONElement; const AContext: TValidationContext): TValidationResult; overload;
     function Visit(const AElement: IJSONElement; const AContext: TValidationContext; const ACompiledSchema: TCompiledSchema): TValidationResult; overload;
     function VisitObject(const AObject: IJSONObject; const AContext: TValidationContext): TValidationResult;
     function VisitArray(const AArray: IJSONArray; const AContext: TValidationContext): TValidationResult;
     function VisitValue(const AValue: IJSONValue; const AContext: TValidationContext): TValidationResult;
-    procedure GetStats(out ATotalValidations, ACacheHits: Integer; out ATotalTime: Int64);
-    procedure ResetStats;
   end;
 
   // Compilador de schemas - Fase 2: Base URI e HTTP
@@ -111,6 +84,8 @@ type
     FOptimizations: Boolean;
     FCompiledSchemas: TDictionary<string, TCompiledSchema>;
     FRootSchema: IJSONElement;
+    FNavigator: TJSONSchemaNavigator;
+    FRefStack: TStringList;
     // Fase 2: Base URI e HTTP
     FBaseURIStack: TStack<string>;
     FHTTPClient: TObject; // THTTPClient será implementado posteriormente
@@ -151,9 +126,6 @@ type
 
   // Configura??es do validador v2
   TValidatorConfig = record
-    EnableMemoization: Boolean;
-    MaxCacheSize: Integer;
-    EnableMetrics: Boolean;
     MaxRecursionDepth: Integer;
     EnableAsyncValidation: Boolean;
     EnableDetailedLogging: Boolean; // Otimiza??o: controle de logging em produ??o
@@ -161,33 +133,18 @@ type
     class function Default: TValidatorConfig; static;
   end;
 
-  // M?tricas de performance
-  TValidationMetrics = record
-    TotalValidations: Integer;
-    CacheHits: Integer;
-    TotalExecutionTime: Int64; // em microsegundos
-    AverageExecutionTime: Double;
-    MemoryUsage: Int64;
-
-    function GetCacheHitRatio: Double;
-    function GetFormattedExecutionTime: string;
-    procedure Reset;
-  end;
-
   TJSONSchemaValidator = class(TInterfacedObject, IJSONSchemaValidator)
   private
     FVersion: TJsonSchemaVersion;
     FVisitor: TValidationVisitor;
     FCompiler: TSchemaCompiler;
+    FResolver: ISchemaCompiler;
     FSchema: IJSONElement;
     FCompiledSchema: TCompiledSchema;
     FConfig: TValidatorConfig;
-    FMetrics: TValidationMetrics;
-    FStopwatch: TStopwatch;
     FLogProc: TProc<String>;
     FErrors: TList<TValidationError>;
     procedure _InitializeRules;
-    procedure _UpdateMetrics(const AExecutionTime: Int64; const ACacheHit: Boolean);
     procedure _CollectErrors(const AResult: TValidationResult);
   protected
     procedure AddLog(const AMessage: string);
@@ -208,17 +165,31 @@ type
     procedure AddError(const APath, AMessage, AFound, AExpected, AKeyword: string;
       ALineNumber: Integer = -1; AColumnNumber: Integer = -1; AContext: string = '');
     function ValidateWithMetrics(const AElement: IJSONElement; const APath: string = ''): TValidationResult;
-    function GetMetrics: TValidationMetrics;
-    function GetCacheStats: string;
     procedure ParseSchema(const ASchema: IJSONElement);
     procedure OnLog(const ALogProc: TProc<String>);
     procedure ClearErrors;
-    procedure ResetMetrics;
     procedure SetConfig(const AConfig: TValidatorConfig);
     //
     property Schema: IJSONElement read FSchema;
     property Config: TValidatorConfig read FConfig write SetConfig;
-    property Metrics: TValidationMetrics read GetMetrics;
+  end;
+
+  TSchemaCompilerAdapter = class(TInterfacedObject, ISchemaCompiler)
+  private
+    FCompiler: TSchemaCompiler;
+  public
+    constructor Create(ACompiler: TSchemaCompiler);
+    function ResolveReference(const ARefPath: string): IJSONElement;
+  end;
+
+  TSubschemaEvaluator = class(TInterfacedObject, ISubschemaEvaluator)
+  private
+    FCompiler: TSchemaCompiler;
+    FVisitor: TValidationVisitor;
+    function _ResolveRefIfNeeded(const ASchema: IJSONElement; const AContext: TValidationContext): IJSONElement;
+  public
+    constructor Create(ACompiler: TSchemaCompiler; AVisitor: TValidationVisitor);
+    function Evaluate(const AValue: IJSONElement; const ASubschema: IJSONElement; const AContext: TValidationContext): TValidationResult;
   end;
 
 implementation
@@ -229,104 +200,79 @@ uses
   System.Generics.Defaults,
   JsonFlow.Reader;
 
-{ TValidationMemoizer }
+{ TSubschemaEvaluator }
 
-constructor TValidationMemoizer.Create(AMaxCacheSize: Integer);
+constructor TSubschemaEvaluator.Create(ACompiler: TSchemaCompiler; AVisitor: TValidationVisitor);
 begin
   inherited Create;
-  FEnabled := True;
-  FMaxCacheSize := AMaxCacheSize;
-  FCacheSize := 0;
-  FHitCount := 0;
-  FMissCount := 0;
-  FCache := TDictionary<string, TValidationResult>.Create;
-  FCacheKeys := TList<string>.Create;
+  FCompiler := ACompiler;
+  FVisitor := AVisitor;
 end;
 
-destructor TValidationMemoizer.Destroy;
-begin
-  FCache.Free;
-  FCacheKeys.Free;
-  inherited Destroy;
-end;
-
-function TValidationMemoizer.GetHitRatio: Double;
-begin
-  if (FHitCount + FMissCount) = 0 then
-    Result := 0.0
-  else
-    Result := FHitCount / (FHitCount + FMissCount);
-end;
-
-function TValidationMemoizer.TryGetCached(const AKey: string; out AResult: TValidationResult): Boolean;
-begin
-  Result := FEnabled and FCache.TryGetValue(AKey, AResult);
-  if Result then
-  begin
-    Inc(FHitCount);
-    AResult.CacheHit := True;
-
-    // Mover para o final da lista LRU
-    FCacheKeys.Remove(AKey);
-    FCacheKeys.Add(AKey);
-  end
-  else
-    Inc(FMissCount);
-end;
-
-procedure TValidationMemoizer.AddToCache(const AKey: string; const AResult: TValidationResult);
+function TSubschemaEvaluator._ResolveRefIfNeeded(const ASchema: IJSONElement; const AContext: TValidationContext): IJSONElement;
 var
-  LCachedResult: TValidationResult;
+  LSchemaObj: IJSONObject;
+  LRefValue: IJSONValue;
 begin
-  if not FEnabled then Exit;
+  Result := ASchema;
+  if not Assigned(ASchema) then
+    Exit;
 
-  // Verificar se j? existe
-  if FCache.ContainsKey(AKey) then
+  if not Supports(ASchema, IJSONObject, LSchemaObj) then
+    Exit;
+
+  if not LSchemaObj.ContainsKey('$ref') then
+    Exit;
+
+  if not Supports(LSchemaObj.GetValue('$ref'), IJSONValue, LRefValue) then
+    Exit;
+
+  if Assigned(AContext.Resolver) then
+    Result := AContext.Resolver.ResolveReference(LRefValue.AsString);
+end;
+
+function TSubschemaEvaluator.Evaluate(const AValue: IJSONElement; const ASubschema: IJSONElement; const AContext: TValidationContext): TValidationResult;
+var
+  LSchema: IJSONElement;
+  LSchemaValue: IJSONValue;
+  LCompiled: TCompiledSchema;
+  LSubContext: TValidationContext;
+begin
+  Result := TValidationResult.Success(AContext.GetFullPath);
+
+  LSchema := _ResolveRefIfNeeded(ASubschema, AContext);
+  if not Assigned(LSchema) then
+    Exit;
+
+  if Supports(LSchema, IJSONValue, LSchemaValue) and LSchemaValue.IsBoolean then
   begin
-    // Atualizar resultado existente
-    LCachedResult := AResult;
-    LCachedResult.CacheHit := False; // Resultado original n?o ? cache hit
-    FCache[AKey] := LCachedResult;
+    if not LSchemaValue.AsBoolean then
+      Exit(TValidationResult.Failure(AContext.GetFullPath, [CreateValidationError(AContext.GetFullPath, 'Schema is false', '', 'true', 'schema', AContext.GetFullSchemaPath)]));
+    Exit;
+  end;
 
-    // Mover para o final da lista LRU
-    FCacheKeys.Remove(AKey);
-    FCacheKeys.Add(AKey);
-  end
-  else
-  begin
-    // Verificar se precisa fazer eviction
-    if FCacheSize >= FMaxCacheSize then
-      EvictLRU;
-
-    // Adicionar novo resultado
-    LCachedResult := AResult;
-    LCachedResult.CacheHit := False;
-    FCache.Add(AKey, LCachedResult);
-    FCacheKeys.Add(AKey);
-    Inc(FCacheSize);
+  LCompiled := FCompiler.Compile(LSchema);
+  LSubContext := TValidationContext.Create(AContext.Schema, AContext.GetFullPath, AContext, AContext.Resolver, AContext.Evaluator);
+  try
+    Result := FVisitor.Visit(AValue, LSubContext, LCompiled);
+  finally
+    LSubContext.Free;
   end;
 end;
 
-procedure TValidationMemoizer.EvictLRU;
-var
-  LOldestKey: string;
+{ TSchemaCompilerAdapter }
+
+constructor TSchemaCompilerAdapter.Create(ACompiler: TSchemaCompiler);
 begin
-  if FCacheKeys.Count > 0 then
-  begin
-    LOldestKey := FCacheKeys[0];
-    FCacheKeys.Delete(0);
-    FCache.Remove(LOldestKey);
-    Dec(FCacheSize);
-  end;
+  inherited Create;
+  FCompiler := ACompiler;
 end;
 
-procedure TValidationMemoizer.Clear;
+function TSchemaCompilerAdapter.ResolveReference(const ARefPath: string): IJSONElement;
 begin
-  FCache.Clear;
-  FCacheKeys.Clear;
-  FCacheSize := 0;
-  FHitCount := 0;
-  FMissCount := 0;
+  if not Assigned(FCompiler) then
+    Exit(nil);
+  Result := FCompiler.ResolveReference(ARefPath);
 end;
 
 { TValidationVisitor }
@@ -334,28 +280,14 @@ end;
 constructor TValidationVisitor.Create;
 begin
   inherited Create;
-  FMemoizer := TValidationMemoizer.Create(1000); // Default cache size
 end;
 
 destructor TValidationVisitor.Destroy;
 begin
-  FMemoizer.Free;
   inherited Destroy;
 end;
 
 { TValidationContext - implementa??o movida para JsonFlow.ValidationEngine }
-
-procedure TValidationVisitor.GetStats(out ATotalValidations, ACacheHits: Integer; out ATotalTime: Int64);
-begin
-  ATotalValidations := FMemoizer.HitCount + FMemoizer.MissCount;
-  ACacheHits := FMemoizer.HitCount;
-  ATotalTime := 0; // Simplificado
-end;
-
-procedure TValidationVisitor.ResetStats;
-begin
-  FMemoizer.Clear;
-end;
 
 // Implementa??o do padr?o Visitor
 
@@ -364,16 +296,7 @@ var
   LRule: IValidationRule;
   LRuleResult: TValidationResult;
   LErrors: TList<TValidationError>;
-  LCacheKey: string;
 begin
-  // Verificar cache se habilitado
-  if FMemoizer.Enabled then
-  begin
-    LCacheKey := AContext.Path + '#' + ACompiledSchema.CacheKey;
-    // Implementa??o simplificada - cache ser? expandido posteriormente
-    Inc(FMemoizer.FMissCount);
-  end;
-
   // Inicializar resultado
   Result.IsValid := True;
   Result.Path := AContext.Path;
@@ -385,13 +308,27 @@ begin
     // Aplicar todas as regras do schema compilado
     for LRule in ACompiledSchema.Rules do
     begin
-      LRuleResult := LRule.Validate(AElement, AContext);
-
-      if not LRuleResult.IsValid then
-      begin
-        Result.IsValid := False;
-        for var LError in LRuleResult.Errors do
-          LErrors.Add(LError);
+      try
+        LRuleResult := LRule.Validate(AElement, AContext);
+        if not LRuleResult.IsValid then
+        begin
+          Result.IsValid := False;
+          for var LError in LRuleResult.Errors do
+            LErrors.Add(LError);
+        end;
+      except
+        on E: Exception do
+        begin
+          Result.IsValid := False;
+          LErrors.Add(CreateValidationError(
+            AContext.GetFullPath,
+            'Rule execution error: ' + E.Message,
+            '',
+            '',
+            LRule.GetKeyword,
+            AContext.GetFullSchemaPath + '/' + EscapeJSONPointer(LRule.GetKeyword)
+          ));
+        end;
       end;
     end;
     Result.Errors := LErrors.ToArray;
@@ -425,7 +362,8 @@ begin
         AContext.Schema,
         AContext.Path + '.' + LPropertyName,
         AContext,
-        AContext.Resolver
+        AContext.Resolver,
+        AContext.Evaluator
       );
       try
         // Visitar recursivamente a propriedade
@@ -471,7 +409,8 @@ begin
         AContext.Schema,
         AContext.Path + '[' + IntToStr(I) + ']',
         AContext,
-        AContext.Resolver
+        AContext.Resolver,
+        AContext.Evaluator
       );
       try
         // Visitar recursivamente o elemento
@@ -521,24 +460,7 @@ var
   LObject: IJSONObject;
   LArray: IJSONArray;
   LValue: IJSONValue;
-  LCacheKey: string;
-  LStartTime: TDateTime;
 begin
-  LStartTime := Now;
-
-  // Otimiza??o: Gerar chave de cache usando hash ao inv?s de concatena??o
-  // Isso reduz significativamente o overhead de string operations
-  var LHash: Cardinal;
-  LHash := THashBobJenkins.GetHashValue(AContext.Path + AElement.TypeName);
-  LCacheKey := IntToStr(LHash);
-
-  // Tentar obter do cache
-  if Assigned(FMemoizer) and FMemoizer.TryGetCached(LCacheKey, Result) then
-  begin
-    Result.ExecutionTime := MilliSecondsBetween(Now, LStartTime);
-    Exit;
-  end;
-
   // Implementar padr?o Visitor baseado no tipo do elemento
   if Supports(AElement, IJSONObject, LObject) then
     Result := VisitObject(LObject, AContext)
@@ -561,12 +483,8 @@ begin
     Result.CacheHit := False;
   end;
 
-  // Calcular tempo de execu??o e adicionar ao cache
-  Result.ExecutionTime := MilliSecondsBetween(Now, LStartTime);
+  Result.ExecutionTime := 0;
   Result.CacheHit := False;
-
-  if Assigned(FMemoizer) then
-    FMemoizer.AddToCache(LCacheKey, Result);
 end;
 
 { TSchemaCompiler }
@@ -577,6 +495,9 @@ begin
   FVersion := AVersion;
   FOptimizations := True;
   FCompiledSchemas := TDictionary<string, TCompiledSchema>.Create;
+  FRootSchema := nil;
+  FNavigator := nil;
+  FRefStack := TStringList.Create;
   // Fase 2: Inicializar Base URI e HTTP
   FBaseURIStack := TStack<string>.Create;
   FBaseURIStack.Push(''); // Base URI vazia inicial
@@ -586,6 +507,8 @@ end;
 
 destructor TSchemaCompiler.Destroy;
 begin
+  FreeAndNil(FNavigator);
+  FRefStack.Free;
   ClearCache; // Limpar cache antes de liberar o dicionário
   FCompiledSchemas.Free;
   // Fase 2: Limpar recursos Base URI e HTTP
@@ -813,6 +736,7 @@ var
   LPairs: TArray<IJSONPair>;
   LAdditionalProps: Boolean;
   LDefinedProperties: TArray<string>;
+  LPatternPropertyKeys: TArray<string>;
   LItemsSchema: IJSONElement;
   LUniqueItems: Boolean;
   LRefValue: IJSONValue;
@@ -821,6 +745,7 @@ var
   // Fase 2: Vari?veis para Base URI
   LBaseURI: string;
   LSchemaID: string;
+  LPushedBaseURI: Boolean;
 begin
   LCacheKey := GetCacheKey(ASchema);
 
@@ -833,31 +758,79 @@ begin
 
   // Armazenar o schema raiz para resolu??o de refer?ncias (apenas se n?o estiver definido)
   if not Assigned(FRootSchema) then
+  begin
     FRootSchema := ASchema;
+    FreeAndNil(FNavigator);
+    FNavigator := TJSONSchemaNavigator.Create(FRootSchema);
+  end;
 
   // Fase 2: Extrair e gerenciar Base URI
   LBaseURI := _ExtractBaseURI(ASchema);
   LSchemaID := LBaseURI;
+  LPushedBaseURI := False;
   if not LBaseURI.IsEmpty then
+  begin
     _PushBaseURI(LBaseURI);
+    LPushedBaseURI := True;
+  end;
+
+  try
 
   // Verificar se ? uma refer?ncia ($ref)
   if Supports(ASchema, IJSONObject, LSchemaObj) and LSchemaObj.ContainsKey('$ref') then
   begin
     LRefValue := LSchemaObj.GetValue('$ref') as IJSONValue;
     LRefPath := LRefValue.AsString;
-    LResolvedSchema := ResolveReference(LRefPath, ASchema);
-    if Assigned(LResolvedSchema) then
+
+    var LRefKey := _GetCurrentBaseURI + '|' + LRefPath;
+    var LAddedToStack := False;
+
+    if FRefStack.IndexOf(LRefKey) < 0 then
     begin
-      // Preservar o schema raiz durante a compila??o recursiva
-      var LOriginalRoot := FRootSchema;
-      try
-        Result := Compile(LResolvedSchema);
-      finally
-        FRootSchema := LOriginalRoot;
-      end;
-      Exit;
+      FRefStack.Add(LRefKey);
+      LAddedToStack := True;
     end;
+
+    try
+      if LAddedToStack then
+        LResolvedSchema := ResolveReference(LRefPath, ASchema)
+      else
+        LResolvedSchema := nil;
+
+      if Assigned(LResolvedSchema) then
+      begin
+        // Preservar o schema raiz durante a compila??o recursiva
+        var LOriginalRoot := FRootSchema;
+        try
+          Result := Compile(LResolvedSchema);
+        finally
+          FRootSchema := LOriginalRoot;
+        end;
+        Exit;
+      end;
+    finally
+      if LAddedToStack then
+        FRefStack.Delete(FRefStack.IndexOf(LRefKey));
+    end;
+
+    LRules := TList<IValidationRule>.Create;
+    try
+      LRules.Add(TRefRule.Create(LRefPath));
+      SetLength(Result.Rules, LRules.Count);
+      for LFor := 0 to LRules.Count - 1 do
+        Result.Rules[LFor] := LRules[LFor];
+      Result.BaseURI := LBaseURI;
+      Result.SchemaID := LSchemaID;
+      Result.ResolvedRefs := TDictionary<string, IJSONElement>.Create;
+      SetLength(Result.HTTPRefs, 0);
+      Result.HasCircularRefs := True;
+      if FOptimizations then
+        Result.Rules := OptimizeRules(Result.Rules);
+      FCompiledSchemas.Add(LCacheKey, Result);
+    finally
+      LRules.Free;
+    end;
+    Exit;
   end;
 
   // Compilar schema
@@ -873,6 +846,7 @@ begin
 
       // Coletar propriedades definidas para usar na valida??o de additionalProperties
       LDefinedProperties := nil;
+      LPatternPropertyKeys := nil;
       if LSchemaObj.ContainsKey('properties') then
       begin
         LPropertiesObj := LSchemaObj.GetValue('properties') as IJSONObject;
@@ -887,24 +861,60 @@ begin
         LRules.Add(TPropertiesRule.Create(LPropertySchemas));
       end;
 
+      if LSchemaObj.ContainsKey('patternProperties') then
+      begin
+        var LPatternPropsObjKeys := (LSchemaObj.GetValue('patternProperties') as IJSONObject).Pairs;
+        SetLength(LPatternPropertyKeys, Length(LPatternPropsObjKeys));
+        for LFor := 0 to Length(LPatternPropsObjKeys) - 1 do
+          LPatternPropertyKeys[LFor] := LPatternPropsObjKeys[LFor].Key;
+      end;
+
       if LSchemaObj.ContainsKey('additionalProperties') then
       begin
-        if (LSchemaObj.GetValue('additionalProperties') as IJSONValue).IsBoolean then
+        var LAdditionalElement := LSchemaObj.GetValue('additionalProperties');
+        var LAdditionalValue: IJSONValue;
+        if Supports(LAdditionalElement, IJSONValue, LAdditionalValue) and LAdditionalValue.IsBoolean then
         begin
-          LAdditionalProps := (LSchemaObj.GetValue('additionalProperties') as IJSONValue).AsBoolean;
-          LRules.Add(TAdditionalPropertiesRule.Create(LAdditionalProps, nil, LDefinedProperties));
+          LAdditionalProps := LAdditionalValue.AsBoolean;
+          LRules.Add(TAdditionalPropertiesRule.Create(LAdditionalProps, nil, LDefinedProperties, LPatternPropertyKeys));
         end
         else
         begin
           // Schema para propriedades adicionais
-          LRules.Add(TAdditionalPropertiesRule.Create(True, LSchemaObj.GetValue('additionalProperties'), LDefinedProperties));
+          LRules.Add(TAdditionalPropertiesRule.Create(True, LAdditionalElement, LDefinedProperties, LPatternPropertyKeys));
         end;
       end;
 
       if LSchemaObj.ContainsKey('items') then
       begin
-        LItemsSchema := LSchemaObj.GetValue('items');
-        LRules.Add(TItemsRule.Create(LItemsSchema));
+        var LItemsElement := LSchemaObj.GetValue('items');
+        var LItemsArray: IJSONArray;
+        if Supports(LItemsElement, IJSONArray, LItemsArray) then
+        begin
+          var LTupleSchemas: TArray<IJSONElement>;
+          SetLength(LTupleSchemas, LItemsArray.Count);
+          for LFor := 0 to LItemsArray.Count - 1 do
+            LTupleSchemas[LFor] := LItemsArray.GetItem(LFor);
+
+          var LAllowAdditionalItems := True;
+          var LAdditionalItemsSchema: IJSONElement := nil;
+          if LSchemaObj.ContainsKey('additionalItems') then
+          begin
+            var LAdditionalItemsElement := LSchemaObj.GetValue('additionalItems');
+            var LAdditionalItemsValue: IJSONValue;
+            if Supports(LAdditionalItemsElement, IJSONValue, LAdditionalItemsValue) and LAdditionalItemsValue.IsBoolean then
+              LAllowAdditionalItems := LAdditionalItemsValue.AsBoolean
+            else
+              LAdditionalItemsSchema := LAdditionalItemsElement;
+          end;
+
+          LRules.Add(TItemsRule.Create(LTupleSchemas, LAllowAdditionalItems, LAdditionalItemsSchema));
+        end
+        else
+        begin
+          LItemsSchema := LItemsElement;
+          LRules.Add(TItemsRule.Create(LItemsSchema));
+        end;
       end;
 
       if LSchemaObj.ContainsKey('uniqueItems') then
@@ -1008,6 +1018,10 @@ begin
   finally
     LRules.Free;
   end;
+  finally
+    if LPushedBaseURI then
+      _PopBaseURI;
+  end;
 end;
 
 function TSchemaCompiler.OptimizeRules(const ARules: TArray<IValidationRule>): TArray<IValidationRule>;
@@ -1020,7 +1034,7 @@ end;
 function TSchemaCompiler.GetCacheKey(const ASchema: IJSONElement): string;
 begin
   // Gerar hash do schema JSON para usar como chave de cache
-  Result := IntToStr(THashBobJenkins.GetHashValue(ASchema.AsJSON));
+  Result := IntToStr(THashBobJenkins.GetHashValue(_GetCurrentBaseURI + '|' + ASchema.AsJSON));
 end;
 
 procedure TSchemaCompiler.ClearCache;
@@ -1029,7 +1043,7 @@ var
   LCompiledSchema: TCompiledSchema;
 begin
   // Liberar todas as inst?ncias de TCompiledSchema antes de limpar o dicion?rio
-  for LKey in FCompiledSchemas.Keys do
+  for LKey in FCompiledSchemas.Keys.ToArray do
   begin
     LCompiledSchema := FCompiledSchemas[LKey];
     if Assigned(LCompiledSchema.Rules) then
@@ -1041,6 +1055,8 @@ begin
   end;
   FCompiledSchemas.Clear;
   FRootSchema := nil; // Limpar tamb?m o schema raiz
+  FreeAndNil(FNavigator);
+  FRefStack.Clear;
   // Fase 2: Resetar stack de Base URI
   FBaseURIStack.Clear;
   FBaseURIStack.Push(''); // Base URI vazia inicial
@@ -1059,12 +1075,34 @@ begin
 
   // Fase 2: Obter Base URI atual
   LCurrentBaseURI := _GetCurrentBaseURI;
+  if LCurrentBaseURI.IsEmpty then
+  begin
+    if Assigned(FRootSchema) then
+      LCurrentBaseURI := _ExtractBaseURI(FRootSchema)
+    else if Assigned(ACurrentSchema) then
+      LCurrentBaseURI := _ExtractBaseURI(ACurrentSchema);
+  end;
 
   // Fase 2: Verificar se é uma referência HTTP absoluta
   if _IsHTTPURI(ARefPath) then
   begin
     Result := _ResolveHTTPReference(ARefPath);
     Exit;
+  end;
+
+  if not Assigned(FNavigator) then
+  begin
+    if Assigned(FRootSchema) then
+      FNavigator := TJSONSchemaNavigator.Create(FRootSchema)
+    else if Assigned(ACurrentSchema) then
+      FNavigator := TJSONSchemaNavigator.Create(ACurrentSchema);
+  end;
+
+  if Assigned(FNavigator) then
+  begin
+    Result := FNavigator.ResolveReferenceSafe(ARefPath, LCurrentBaseURI);
+    if Assigned(Result) then
+      Exit;
   end;
 
   // Fase 2: Resolver URI relativa com Base URI
@@ -1179,7 +1217,7 @@ end;
 
 function TSchemaCompiler._IsAbsoluteURI(const AURI: string): Boolean;
 begin
-  Result := AURI.Contains('://') or AURI.StartsWith('//');
+  Result := AURI.Contains('://') or AURI.StartsWith('//') or TPath.IsPathRooted(AURI);
 end;
 
 function TSchemaCompiler._IsHTTPURI(const AURI: string): Boolean;
@@ -1222,41 +1260,9 @@ end;
 
 class function TValidatorConfig.Default: TValidatorConfig;
 begin
-  Result.EnableMemoization := True;
-  Result.MaxCacheSize := 10000;
-  Result.EnableMetrics := True;
   Result.MaxRecursionDepth := 100;
   Result.EnableAsyncValidation := False;
   Result.EnableDetailedLogging := False; // Otimiza??o: desabilitado por padr?o em produ??o
-end;
-
-{ TValidationMetrics }
-
-function TValidationMetrics.GetCacheHitRatio: Double;
-begin
-  if TotalValidations = 0 then
-    Result := 0.0
-  else
-    Result := CacheHits / TotalValidations;
-end;
-
-function TValidationMetrics.GetFormattedExecutionTime: string;
-begin
-  if TotalExecutionTime < 1000 then
-    Result := Format('%d ?s', [TotalExecutionTime])
-  else if TotalExecutionTime < 1000000 then
-    Result := Format('%.2f ms', [TotalExecutionTime / 1000])
-  else
-    Result := Format('%.2f s', [TotalExecutionTime / 1000000]);
-end;
-
-procedure TValidationMetrics.Reset;
-begin
-  TotalValidations := 0;
-  CacheHits := 0;
-  TotalExecutionTime := 0;
-  AverageExecutionTime := 0;
-  MemoryUsage := 0;
 end;
 
 { TJSONSchemaValidator }
@@ -1267,17 +1273,13 @@ begin
   FVersion := AVersion;
   FConfig := AConfig;
 
-  if FConfig.EnableMemoization and (FConfig.MaxCacheSize = 0) then
-    FConfig := TValidatorConfig.Default;
-
   FVisitor := TValidationVisitor.Create;
-  FVisitor.Memoizer.Enabled := FConfig.EnableMemoization;
 
   FCompiler := TSchemaCompiler.Create(AVersion);
   FCompiler.EnableOptimizations := True;
+  FResolver := TSchemaCompilerAdapter.Create(FCompiler);
 
   FErrors := TList<TValidationError>.Create;
-  FStopwatch := TStopwatch.Create;
 
   // Inicializar FCompiledSchema com valores padr?o
   SetLength(FCompiledSchema.Rules, 0);
@@ -1286,7 +1288,6 @@ begin
   FCompiledSchema.CompiledAt := 0;
 
   _InitializeRules;
-  ResetMetrics;
 
   AddLog(Format('TJSONSchemaValidator created for version %s', [GetEnumName(TypeInfo(TJsonSchemaVersion), Ord(AVersion))]));
 end;
@@ -1300,6 +1301,7 @@ destructor TJSONSchemaValidator.Destroy;
 begin
   FErrors.Free;
   FVisitor.Free;
+  FResolver := nil;
   FCompiler.Free;
   // Limpar array de regras compiladas
   SetLength(FCompiledSchema.Rules, 0);
@@ -1313,21 +1315,6 @@ begin
   // As regras agora s?o criadas dinamicamente pelo TSchemaCompiler
   // baseadas no schema fornecido via ParseSchema
   AddLog('Validation rules will be initialized dynamically by schema compiler');
-end;
-
-procedure TJSONSchemaValidator._UpdateMetrics(const AExecutionTime: Int64; const ACacheHit: Boolean);
-begin
-  if not FConfig.EnableMetrics then
-    Exit;
-
-  Inc(FMetrics.TotalValidations);
-  if ACacheHit then
-    Inc(FMetrics.CacheHits);
-
-  FMetrics.TotalExecutionTime := FMetrics.TotalExecutionTime + AExecutionTime;
-
-  if FMetrics.TotalValidations > 0 then
-    FMetrics.AverageExecutionTime := FMetrics.TotalExecutionTime / FMetrics.TotalValidations;
 end;
 
 procedure TJSONSchemaValidator._CollectErrors(const AResult: TValidationResult);
@@ -1445,14 +1432,9 @@ end;
 
 function TJSONSchemaValidator.ValidateWithMetrics(const AElement: IJSONElement; const APath: string): TValidationResult;
 var
-  LStartTime: Int64;
   LContext: TValidationContext;
-  LCacheHit: Boolean;
+  LEvaluator: ISubschemaEvaluator;
 begin
-  LCacheHit := False; // Inicializar vari?vel
-  FStopwatch.Reset;
-  FStopwatch.Start;
-
   // Limpar erros anteriores
   ClearErrors;
 
@@ -1464,13 +1446,11 @@ begin
     // Criar contexto de valida??o
     // Usar nil como resolver para evitar problemas de mem?ria
     // A valida??o com $ref ser? implementada de forma diferente
-    LContext := TValidationContext.Create(FSchema, APath, nil, nil);
+    LEvaluator := TSubschemaEvaluator.Create(FCompiler, FVisitor);
+    LContext := TValidationContext.Create(FSchema, APath, nil, FResolver, LEvaluator);
     try
       // Usar o visitor para validar com o schema compilado
       Result := FVisitor.Visit(AElement, LContext, FCompiledSchema);
-
-      // Verificar se foi um cache hit
-      LCacheHit := FVisitor.Memoizer.Enabled and (FVisitor.Memoizer.GetHitRatio > 0);
 
       // Coletar erros do resultado
       _CollectErrors(Result);
@@ -1490,57 +1470,12 @@ begin
     end;
   end;
 
-  FStopwatch.Stop;
-  LStartTime := FStopwatch.ElapsedMilliseconds * 1000; // Converter para microsegundos
-
-  _UpdateMetrics(LStartTime, LCacheHit);
-
-  AddLog(Format('Validation completed in %s (cache hit: %s)',
-    [FormatFloat('0.000', LStartTime / 1000) + ' ms', BoolToStr(LCacheHit, True)]));
-end;
-
-function TJSONSchemaValidator.GetMetrics: TValidationMetrics;
-begin
-  Result := FMetrics;
-
-  // Atualizar estat?sticas do cache
-  var LTotalValidations, LCacheHits: Integer;
-  var LTotalTime: Int64;
-  FVisitor.GetStats(LTotalValidations, LCacheHits, LTotalTime);
-
-  Result.TotalValidations := LTotalValidations;
-  Result.CacheHits := LCacheHits;
-  Result.TotalExecutionTime := LTotalTime;
-
-  if Result.TotalValidations > 0 then
-    Result.AverageExecutionTime := Result.TotalExecutionTime / Result.TotalValidations;
-end;
-
-procedure TJSONSchemaValidator.ResetMetrics;
-begin
-  FMetrics.Reset;
-  FVisitor.ResetStats;
-  FVisitor.Memoizer.Clear;
-end;
-
-function TJSONSchemaValidator.GetCacheStats: string;
-var
-  LMemoizer: TValidationMemoizer;
-begin
-  LMemoizer := FVisitor.Memoizer;
-  Result := Format('Cache: %d entries, %.1f%% hit ratio (%d hits, %d misses)', [
-    LMemoizer.CacheSize,
-    LMemoizer.GetHitRatio * 100,
-    LMemoizer.HitCount,
-    LMemoizer.MissCount
-  ]);
+  AddLog('Validation completed');
 end;
 
 procedure TJSONSchemaValidator.SetConfig(const AConfig: TValidatorConfig);
 begin
   FConfig := AConfig;
-  FVisitor.Memoizer.Enabled := AConfig.EnableMemoization;
-
   AddLog('Configuration updated');
 end;
 

@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -12,6 +12,7 @@
 }
 
 {$include ../../JsonFlow.inc}
+
 unit JsonFlow.ValidationRules.PropertyNames;
 
 interface
@@ -63,6 +64,17 @@ begin
     Result := TValidationResult.Success(AContext.GetFullPath);
     Exit;
   end;
+
+  if Assigned(AContext.Evaluator) then
+  begin
+    LPropertyNameValue := TJSONValueString.Create(APropertyName);
+    try
+      Result := AContext.Evaluator.Evaluate(LPropertyNameValue, ASchema, AContext);
+    finally
+      LPropertyNameValue := nil;
+    end;
+    Exit;
+  end;
   
   // Criar um IJSONValue temporário para o nome da propriedade
   LPropertyNameValue := TJSONValueString.Create(APropertyName);
@@ -78,7 +90,8 @@ begin
           Format('Property name "%s" type validation failed: expected string', [APropertyName]),
           'property name',
           'string',
-          'propertyNames'
+          'propertyNames',
+          AContext.GetFullSchemaPath + '/propertyNames'
         );
         Result := TValidationResult.Failure(AContext.GetFullPath, [LError]);
         Exit;
@@ -163,7 +176,8 @@ begin
       'Value must be an object for propertyNames validation',
       'non-object',
       'object',
-      'propertyNames'
+      'propertyNames',
+      LValidationContext.GetFullSchemaPath + '/propertyNames'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -174,18 +188,23 @@ begin
     LHasErrors := False;
     LPairs := LObject.Pairs;
     
-    // Validar cada nome de propriedade
-    for I := 0 to Length(LPairs) - 1 do
-    begin
-      LPropertyName := LPairs[I].Key;
-      
-      LPropertyResult := ValidatePropertyName(LPropertyName, FSchema, LValidationContext);
-      
-      if not LPropertyResult.IsValid then
+    LValidationContext.PushSchemaSegment('propertyNames');
+    try
+      // Validar cada nome de propriedade
+      for I := 0 to Length(LPairs) - 1 do
       begin
-        LHasErrors := True;
-        LAllErrors.AddRange(LPropertyResult.Errors);
+        LPropertyName := LPairs[I].Key;
+
+        LPropertyResult := ValidatePropertyName(LPropertyName, FSchema, LValidationContext);
+
+        if not LPropertyResult.IsValid then
+        begin
+          LHasErrors := True;
+          LAllErrors.AddRange(LPropertyResult.Errors);
+        end;
       end;
+    finally
+      LValidationContext.PopSchemaSegment;
     end;
 
     if LHasErrors then

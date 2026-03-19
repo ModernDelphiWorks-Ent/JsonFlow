@@ -30,7 +30,11 @@ type
     [Test]
     procedure TestValidate_RequiredField;
     [Test]
+    procedure TestValidate_RequiredField_Invalid;
+    [Test]
     procedure TestValidate_MinLength;
+    [Test]
+    procedure TestValidate_MinLength_Invalid;
     [Test]
     procedure TestValidate_MaxLength;
     [Test]
@@ -120,6 +124,17 @@ begin
   Assert.IsTrue(FReader.Validate(LJson), 'Should validate required field correctly');
 end;
 
+procedure TJSONSchemaValidatorNewTests.TestValidate_RequiredField_Invalid;
+var
+  LSchema: String;
+  LJson: String;
+begin
+  LSchema := '{"type": "object", "properties": {"name": {"type": "string"}}, "required": ["name"]}';
+  FReader.LoadFromString(LSchema);
+  LJson := '{}';
+  Assert.IsFalse(FReader.Validate(LJson), 'Should fail when required field is missing');
+end;
+
 procedure TJSONSchemaValidatorNewTests.TestValidate_MinLength;
 var
   LSchema: String;
@@ -129,6 +144,17 @@ begin
   FReader.LoadFromString(LSchema);
   LJson := '"test"';
   Assert.IsTrue(FReader.Validate(LJson), 'Should validate minLength correctly');
+end;
+
+procedure TJSONSchemaValidatorNewTests.TestValidate_MinLength_Invalid;
+var
+  LSchema: String;
+  LJson: String;
+begin
+  LSchema := '{"type": "string", "minLength": 3}';
+  FReader.LoadFromString(LSchema);
+  LJson := '"hi"';
+  Assert.IsFalse(FReader.Validate(LJson), 'Should fail for string shorter than minLength');
 end;
 
 procedure TJSONSchemaValidatorNewTests.TestValidate_MaxLength;

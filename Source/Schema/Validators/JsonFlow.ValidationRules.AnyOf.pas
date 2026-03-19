@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -12,6 +12,7 @@
 }
 
 {$include ../../JsonFlow.inc}
+
 unit JsonFlow.ValidationRules.AnyOf;
 
 interface
@@ -69,6 +70,12 @@ var
   I: Integer;
   LRequiredFields: TArray<string>;
 begin
+  if Assigned(AContext.Evaluator) then
+  begin
+    Result := AContext.Evaluator.Evaluate(AValue, ASchema, AContext);
+    Exit;
+  end;
+
   if not Assigned(ASchema) then
   begin
     Result := TValidationResult.Success(AContext.GetFullPath);
@@ -235,22 +242,32 @@ begin
   LAllErrors := TList<TValidationError>.Create;
   try
     LHasValidSchema := False;
-    
-    // Pelo menos um esquema deve ser válido
-    for I := 0 to Length(FSchemas) - 1 do
-    begin
-      LSchema := FSchemas[I];
-      LSchemaResult := ValidateAgainstSchema(AValue, LSchema, LValidationContext);
-      
-      if LSchemaResult.IsValid then
+
+    LValidationContext.PushSchemaSegment('anyOf');
+    try
+      // Pelo menos um esquema deve ser válido
+      for I := 0 to Length(FSchemas) - 1 do
       begin
-        LHasValidSchema := True;
-        Break; // Encontrou um esquema válido, pode parar
-      end
-      else
-      begin
-        LAllErrors.AddRange(LSchemaResult.Errors);
+        LSchema := FSchemas[I];
+        LValidationContext.PushSchemaSegment(IntToStr(I));
+        try
+          LSchemaResult := ValidateAgainstSchema(AValue, LSchema, LValidationContext);
+        finally
+          LValidationContext.PopSchemaSegment;
+        end;
+
+        if LSchemaResult.IsValid then
+        begin
+          LHasValidSchema := True;
+          Break; // Encontrou um esquema válido, pode parar
+        end
+        else
+        begin
+          LAllErrors.AddRange(LSchemaResult.Errors);
+        end;
       end;
+    finally
+      LValidationContext.PopSchemaSegment;
     end;
     
     if LHasValidSchema then
@@ -262,9 +279,17 @@ begin
         'Value does not match any of the schemas in anyOf',
         'invalid',
         'valid against at least one schema',
-        'anyOf'
+        'anyOf',
+        LValidationContext.GetFullSchemaPath + '/anyOf'
       );
-      Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
+      var LErrors := TList<TValidationError>.Create;
+      try
+        LErrors.Add(LError);
+        LErrors.AddRange(LAllErrors);
+        Result := TValidationResult.Failure(LValidationContext.GetFullPath, LErrors.ToArray);
+      finally
+        LErrors.Free;
+      end;
     end;
   finally
     LAllErrors.Free;

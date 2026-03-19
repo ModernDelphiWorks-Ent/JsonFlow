@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -56,7 +56,8 @@ begin
       'Value must be a number for exclusiveMinimum validation',
       'non-number',
       'number',
-      'exclusiveMinimum'
+      'exclusiveMinimum',
+      LValidationContext.GetFullSchemaPath + '/exclusiveMinimum'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -69,7 +70,8 @@ begin
       'Value must be a number for exclusiveMinimum validation',
       'non-number',
       'number',
-      'exclusiveMinimum'
+      'exclusiveMinimum',
+      LValidationContext.GetFullSchemaPath + '/exclusiveMinimum'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -84,7 +86,8 @@ begin
       Format('Value %g is not greater than exclusiveMinimum %g', [LValue.AsFloat, FMinValue]),
       FloatToStr(LValue.AsFloat),
       FloatToStr(FMinValue),
-      'exclusiveMinimum'
+      'exclusiveMinimum',
+      LValidationContext.GetFullSchemaPath + '/exclusiveMinimum'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
   end;

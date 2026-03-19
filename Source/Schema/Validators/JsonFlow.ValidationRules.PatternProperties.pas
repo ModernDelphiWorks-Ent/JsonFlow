@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -12,6 +12,7 @@
 }
 
 {$include ../../JsonFlow.inc}
+
 unit JsonFlow.ValidationRules.PatternProperties;
 
 interface
@@ -58,6 +59,12 @@ var
   LTypeValue: string;
   LTypeRule: IValidationRule;
 begin
+  if Assigned(AContext.Evaluator) then
+  begin
+    Result := AContext.Evaluator.Evaluate(AValue, ASchema, AContext);
+    Exit;
+  end;
+
   if not Supports(ASchema, IJSONObject, LSchemaObj) then
   begin
     Result := TValidationResult.Success(AContext.GetFullPath);
@@ -106,7 +113,8 @@ begin
       'Value must be an object for patternProperties validation',
       'non-object',
       'object',
-      'patternProperties'
+      'patternProperties',
+      LValidationContext.GetFullSchemaPath + '/patternProperties'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -117,51 +125,59 @@ begin
     LHasErrors := False;
     LPairs := LObject.Pairs;
     
-    // Verificar cada propriedade do objeto
-    for I := 0 to Length(LPairs) - 1 do
-    begin
-      LPropertyName := LPairs[I].Key;
-      LPropertyValue := LPairs[I].Value;
-      
-      // Verificar se a propriedade corresponde a algum padrão
-      for LPattern in FPatternSchemas.Keys do
+    LValidationContext.PushSchemaSegment('patternProperties');
+    try
+      // Verificar cada propriedade do objeto
+      for I := 0 to Length(LPairs) - 1 do
       begin
-        try
-          LRegex := TRegEx.Create(LPattern);
-          if LRegex.IsMatch(LPropertyName) then
-          begin
-            LPatternSchema := FPatternSchemas[LPattern];
-            
-            // Criar contexto para a propriedade
-            LValidationContext.PushProperty(LPropertyName);
-            try
-              // Validar usando o esquema do padrão
-              LPropertyResult := ValidatePropertySchema(LPropertyValue, LPatternSchema, LValidationContext);
-              
-              if not LPropertyResult.IsValid then
-              begin
-                LHasErrors := True;
-                LAllErrors.AddRange(LPropertyResult.Errors);
+        LPropertyName := LPairs[I].Key;
+        LPropertyValue := LPairs[I].Value;
+
+        // Verificar se a propriedade corresponde a algum padrão
+        for LPattern in FPatternSchemas.Keys do
+        begin
+          try
+            LRegex := TRegEx.Create(LPattern);
+            if LRegex.IsMatch(LPropertyName) then
+            begin
+              LPatternSchema := FPatternSchemas[LPattern];
+
+              // Criar contexto para a propriedade
+              LValidationContext.PushProperty(LPropertyName);
+              LValidationContext.PushSchemaSegment(LPattern);
+              try
+                // Validar usando o esquema do padrão
+                LPropertyResult := ValidatePropertySchema(LPropertyValue, LPatternSchema, LValidationContext);
+
+                if not LPropertyResult.IsValid then
+                begin
+                  LHasErrors := True;
+                  LAllErrors.AddRange(LPropertyResult.Errors);
+                end;
+              finally
+                LValidationContext.PopSchemaSegment;
+                LValidationContext.PopProperty;
               end;
-            finally
-              LValidationContext.PopProperty;
             end;
-          end;
-        except
-          on E: Exception do
-          begin
-            LError := CreateValidationError(
-              LValidationContext.GetFullPath,
-              Format('Invalid regex pattern "%s": %s', [LPattern, E.Message]),
-              LPattern,
-              'valid regex',
-              'patternProperties'
-            );
-            LAllErrors.Add(LError);
-            LHasErrors := True;
+          except
+            on E: Exception do
+            begin
+              LError := CreateValidationError(
+                LValidationContext.GetFullPath,
+                Format('Invalid regex pattern "%s": %s', [LPattern, E.Message]),
+                LPattern,
+                'valid regex',
+                'patternProperties',
+                LValidationContext.GetFullSchemaPath + '/patternProperties'
+              );
+              LAllErrors.Add(LError);
+              LHasErrors := True;
+            end;
           end;
         end;
       end;
+    finally
+      LValidationContext.PopSchemaSegment;
     end;
 
     if LHasErrors then

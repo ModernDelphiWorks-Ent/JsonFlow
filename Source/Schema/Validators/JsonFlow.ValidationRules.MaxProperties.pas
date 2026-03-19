@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -57,7 +57,8 @@ begin
       'Value must be an object for maxProperties validation',
       'non-object',
       'object',
-      'maxProperties'
+      'maxProperties',
+      LValidationContext.GetFullSchemaPath + '/maxProperties'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -74,7 +75,8 @@ begin
       Format('Object has %d properties, maximum allowed is %d', [LPropertyCount, FMaxProperties]),
       IntToStr(LPropertyCount),
       IntToStr(FMaxProperties),
-      'maxProperties'
+      'maxProperties',
+      LValidationContext.GetFullSchemaPath + '/maxProperties'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
   end;

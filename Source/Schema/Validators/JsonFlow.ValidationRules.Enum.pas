@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -58,7 +58,8 @@ begin
       'Value must be a primitive for enum validation',
       'non-primitive',
       'primitive',
-      'enum'
+      'enum',
+      LValidationContext.GetFullSchemaPath + '/enum'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -94,7 +95,8 @@ begin
     Format('Value "%s" is not in the allowed enumeration', [LValueStr]),
     LValueStr,
     'one of: ' + string.Join(', ', FAllowedValues),
-    'enum'
+    'enum',
+    LValidationContext.GetFullSchemaPath + '/enum'
   );
   Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
 end;

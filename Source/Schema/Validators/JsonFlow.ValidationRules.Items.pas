@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -12,6 +12,7 @@
 }
 
 {$include ../../JsonFlow.inc}
+
 unit JsonFlow.ValidationRules.Items;
 
 interface
@@ -28,11 +29,13 @@ type
     FItemSchema: IJSONElement;
     FItemSchemas: TArray<IJSONElement>; // Para arrays com esquemas específicos por posição
     FUsePositionalSchemas: Boolean;
+    FAllowAdditionalItems: Boolean;
+    FAdditionalItemsSchema: IJSONElement;
   private
     function ValidateItemAgainstSchema(const AItem: IJSONElement; const ASchema: IJSONElement; const AContext: TValidationContext): TValidationResult;
   public
     constructor Create(const AItemSchema: IJSONElement); overload;
-    constructor Create(const AItemSchemas: TArray<IJSONElement>); overload;
+    constructor Create(const AItemSchemas: TArray<IJSONElement>; const AAllowAdditionalItems: Boolean = True; const AAdditionalItemsSchema: IJSONElement = nil); overload;
     function Validate(const AValue: IJSONElement; const AContext: TObject): TValidationResult; override;
   end;
 
@@ -45,13 +48,17 @@ begin
   inherited Create('items');
   FItemSchema := AItemSchema;
   FUsePositionalSchemas := False;
+  FAllowAdditionalItems := True;
+  FAdditionalItemsSchema := nil;
 end;
 
-constructor TItemsRule.Create(const AItemSchemas: TArray<IJSONElement>);
+constructor TItemsRule.Create(const AItemSchemas: TArray<IJSONElement>; const AAllowAdditionalItems: Boolean; const AAdditionalItemsSchema: IJSONElement);
 begin
   inherited Create('items');
   FItemSchemas := AItemSchemas;
   FUsePositionalSchemas := True;
+  FAllowAdditionalItems := AAllowAdditionalItems;
+  FAdditionalItemsSchema := AAdditionalItemsSchema;
 end;
 
 function TItemsRule.Validate(const AValue: IJSONElement; const AContext: TObject): TValidationResult;
@@ -75,7 +82,8 @@ begin
       'Value must be an array for items validation',
       'non-array',
       'array',
-      'items'
+      'items',
+      LValidationContext.GetFullSchemaPath + '/items'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -96,7 +104,27 @@ begin
         if LFor < Length(FItemSchemas) then
           LItemSchema := FItemSchemas[LFor]
         else
-          LItemSchema := nil; // Sem esquema para esta posição
+        begin
+          if not FAllowAdditionalItems then
+          begin
+            LHasErrors := True;
+            LError := CreateValidationError(
+              LValidationContext.GetFullPath,
+              Format('Additional item at index %d is not allowed', [LFor]),
+              IntToStr(LFor),
+              'no additional items',
+              'additionalItems',
+              LValidationContext.GetFullSchemaPath + '/additionalItems'
+            );
+            LAllErrors.Add(LError);
+            Continue;
+          end;
+
+          if Assigned(FAdditionalItemsSchema) then
+            LItemSchema := FAdditionalItemsSchema
+          else
+            LItemSchema := nil;
+        end;
       end
       else
         LItemSchema := FItemSchema;
@@ -106,6 +134,19 @@ begin
         // Criar contexto para o item
         LValidationContext.PushArrayIndex(LFor);
         try
+          if FUsePositionalSchemas then
+          begin
+            if LFor < Length(FItemSchemas) then
+            begin
+              LValidationContext.PushSchemaSegment('items');
+              LValidationContext.PushSchemaSegment(IntToStr(LFor));
+            end
+            else
+              LValidationContext.PushSchemaSegment('additionalItems');
+          end
+          else
+            LValidationContext.PushSchemaSegment('items');
+          try
           // Validar o item usando o esquema
           LItemResult := ValidateItemAgainstSchema(LItem, LItemSchema, LValidationContext);
           
@@ -113,6 +154,20 @@ begin
           begin
             LHasErrors := True;
             LAllErrors.AddRange(LItemResult.Errors);
+          end;
+          finally
+            if FUsePositionalSchemas then
+            begin
+              if LFor < Length(FItemSchemas) then
+              begin
+                LValidationContext.PopSchemaSegment;
+                LValidationContext.PopSchemaSegment;
+              end
+              else
+                LValidationContext.PopSchemaSegment;
+            end
+            else
+              LValidationContext.PopSchemaSegment;
           end;
         finally
           LValidationContext.PopArrayIndex;
@@ -155,6 +210,12 @@ var
   LPropertyErrors: TList<TValidationError>;
   LNewContext: TValidationContext;
 begin
+  if Assigned(AContext.Evaluator) then
+  begin
+    Result := AContext.Evaluator.Evaluate(AItem, ASchema, AContext);
+    Exit;
+  end;
+
   // Implementação básica de validação de tipo e propriedades
   if not Supports(ASchema, IJSONObject, LSchemaObj) then
   begin
@@ -205,7 +266,8 @@ begin
            Format('Expected type %s but got %s', [LExpectedType, LActualType]),
            LActualType,
            LExpectedType,
-           'type'
+           'type',
+           AContext.GetFullSchemaPath + '/type'
          );
          LAllErrors.Add(LError);
          LHasErrors := True;
@@ -217,30 +279,37 @@ begin
     begin
       LPropertiesObj := LSchemaObj.GetValue('properties') as IJSONObject;
       LPairs := LPropertiesObj.Pairs;
-      
-      for LFor := 0 to Length(LPairs) - 1 do
-      begin
-        LPropertyName := LPairs[LFor].Key;
-        LPropertySchema := LPairs[LFor].Value;
-        
-        if LItemObj.ContainsKey(LPropertyName) then
+
+      AContext.PushSchemaSegment('properties');
+      try
+        for LFor := 0 to Length(LPairs) - 1 do
         begin
-          LPropertyValue := LItemObj.GetValue(LPropertyName);
-          
-          // Criar contexto para a propriedade
-          AContext.PushProperty(LPropertyName);
-          try
-            // Validar recursivamente a propriedade
-            LPropertyResult := ValidateItemAgainstSchema(LPropertyValue, LPropertySchema, AContext);
-            if not LPropertyResult.IsValid then
-            begin
-              LHasErrors := True;
-              LAllErrors.AddRange(LPropertyResult.Errors);
+          LPropertyName := LPairs[LFor].Key;
+          LPropertySchema := LPairs[LFor].Value;
+
+          if LItemObj.ContainsKey(LPropertyName) then
+          begin
+            LPropertyValue := LItemObj.GetValue(LPropertyName);
+
+            // Criar contexto para a propriedade
+            AContext.PushProperty(LPropertyName);
+            AContext.PushSchemaSegment(LPropertyName);
+            try
+              // Validar recursivamente a propriedade
+              LPropertyResult := ValidateItemAgainstSchema(LPropertyValue, LPropertySchema, AContext);
+              if not LPropertyResult.IsValid then
+              begin
+                LHasErrors := True;
+                LAllErrors.AddRange(LPropertyResult.Errors);
+              end;
+            finally
+              AContext.PopSchemaSegment;
+              AContext.PopProperty;
             end;
-          finally
-            AContext.PopProperty;
           end;
         end;
+      finally
+        AContext.PopSchemaSegment;
       end;
     end;
     

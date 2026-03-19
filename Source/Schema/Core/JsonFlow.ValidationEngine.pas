@@ -26,6 +26,8 @@ uses
 type
   // Usar TRuleType, TValidationStatus, TValidationResult e TValidationError de JsonFlow.Interfaces
 
+  TValidationContext = class;
+
   // Interface base para regras de valida??o
   IValidationRule = interface
     ['{B3C1CC08-4573-4816-9718-09EAB8B5D8EF}']
@@ -40,6 +42,11 @@ type
     function ResolveReference(const ARefPath: string): IJSONElement;
   end;
 
+  ISubschemaEvaluator = interface
+    ['{F62F2D68-CC89-4C5C-BCE6-2A4C5A1A18E6}']
+    function Evaluate(const AValue: IJSONElement; const ASubschema: IJSONElement; const AContext: TValidationContext): TValidationResult;
+  end;
+
   // Contexto de valida??o simplificado
   TValidationContext = class
   private
@@ -47,18 +54,27 @@ type
     FPath: string;
     FParent: TValidationContext;
     FPathStack: TArray<string>;
+    FSchemaPath: string;
+    FSchemaPathStack: TArray<string>;
     FResolver: ISchemaCompiler;
+    FEvaluator: ISubschemaEvaluator;
   public
-    constructor Create(const ASchema: IJSONElement; const APath: string; AParent: TValidationContext; AResolver: ISchemaCompiler);
+    constructor Create(const ASchema: IJSONElement; const APath: string; AParent: TValidationContext; AResolver: ISchemaCompiler); overload;
+    constructor Create(const ASchema: IJSONElement; const APath: string; AParent: TValidationContext; AResolver: ISchemaCompiler; const AEvaluator: ISubschemaEvaluator); overload;
     destructor Destroy; override;
     function GetFullPath: string;
+    function GetFullSchemaPath: string;
     procedure PushProperty(const APropertyName: string);
     procedure PopProperty;
     procedure PushArrayIndex(AIndex: Integer);
     procedure PopArrayIndex;
+    procedure PushSchemaSegment(const ASegment: string);
+    procedure PopSchemaSegment;
     property Schema: IJSONElement read FSchema;
     property Path: string read FPath;
+    property SchemaPath: string read FSchemaPath write FSchemaPath;
     property Resolver: ISchemaCompiler read FResolver write FResolver;
+    property Evaluator: ISubschemaEvaluator read FEvaluator write FEvaluator;
   end;
 
 // Fun??es auxiliares
@@ -78,12 +94,30 @@ begin
   FPath := APath;
   FParent := AParent;
   FResolver := AResolver;
+  FEvaluator := nil;
   SetLength(FPathStack, 0);
+  if Assigned(AParent) then
+  begin
+    FSchemaPath := AParent.FSchemaPath;
+    FSchemaPathStack := Copy(AParent.FSchemaPathStack);
+  end
+  else
+  begin
+    FSchemaPath := '';
+    SetLength(FSchemaPathStack, 0);
+  end;
+end;
+
+constructor TValidationContext.Create(const ASchema: IJSONElement; const APath: string; AParent: TValidationContext; AResolver: ISchemaCompiler; const AEvaluator: ISubschemaEvaluator);
+begin
+  Create(ASchema, APath, AParent, AResolver);
+  FEvaluator := AEvaluator;
 end;
 
 destructor TValidationContext.Destroy;
 begin
   FResolver := nil;
+  FEvaluator := nil;
   FParent := nil; // Evitar refer?ncia circular
   inherited Destroy;
 end;
@@ -104,6 +138,15 @@ begin
     Result := '/';
 end;
 
+function TValidationContext.GetFullSchemaPath: string;
+var
+  LFor: Integer;
+begin
+  Result := FSchemaPath;
+  for LFor := 0 to Length(FSchemaPathStack) - 1 do
+    Result := Result + '/' + FSchemaPathStack[LFor];
+end;
+
 procedure TValidationContext.PushProperty(const APropertyName: string);
 begin
   SetLength(FPathStack, Length(FPathStack) + 1);
@@ -122,6 +165,18 @@ begin
   SetLength(FPathStack, Length(FPathStack) + 1);
   // No formato JSON Pointer, índices de array são tratados como strings simples
   FPathStack[Length(FPathStack) - 1] := IntToStr(AIndex);
+end;
+
+procedure TValidationContext.PushSchemaSegment(const ASegment: string);
+begin
+  SetLength(FSchemaPathStack, Length(FSchemaPathStack) + 1);
+  FSchemaPathStack[Length(FSchemaPathStack) - 1] := EscapeJSONPointer(ASegment);
+end;
+
+procedure TValidationContext.PopSchemaSegment;
+begin
+  if Length(FSchemaPathStack) > 0 then
+    SetLength(FSchemaPathStack, Length(FSchemaPathStack) - 1);
 end;
 
 procedure TValidationContext.PopArrayIndex;

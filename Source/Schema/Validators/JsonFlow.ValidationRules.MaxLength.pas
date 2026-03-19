@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -62,7 +62,8 @@ begin
       'Value must be a string or array for maxLength validation',
       'invalid type',
       'string or array',
-      'maxLength'
+      'maxLength',
+      LValidationContext.GetFullSchemaPath + '/maxLength'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -77,7 +78,8 @@ begin
       Format('Length %d is greater than maximum length %d', [LLength, FMaxLength]),
       IntToStr(LLength),
       IntToStr(FMaxLength),
-      'maxLength'
+      'maxLength',
+      LValidationContext.GetFullSchemaPath + '/maxLength'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
   end;

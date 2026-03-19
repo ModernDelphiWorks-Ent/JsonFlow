@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -12,6 +12,7 @@
 }
 
 {$include ../../JsonFlow.inc}
+
 unit JsonFlow.ValidationRules.AllOf;
 
 interface
@@ -69,6 +70,12 @@ var
   I: Integer;
   LRequiredFields: TArray<string>;
 begin
+  if Assigned(AContext.Evaluator) then
+  begin
+    Result := AContext.Evaluator.Evaluate(AValue, ASchema, AContext);
+    Exit;
+  end;
+
   if not Assigned(ASchema) then
   begin
     Result := TValidationResult.Success(AContext.GetFullPath);
@@ -236,17 +243,27 @@ begin
   try
     LHasErrors := False;
     
-    // Todos os esquemas devem ser válidos
-    for I := 0 to Length(FSchemas) - 1 do
-    begin
-      LSchema := FSchemas[I];
-      LSchemaResult := ValidateAgainstSchema(AValue, LSchema, LValidationContext);
-      
-      if not LSchemaResult.IsValid then
+    LValidationContext.PushSchemaSegment('allOf');
+    try
+      // Todos os esquemas devem ser válidos
+      for I := 0 to Length(FSchemas) - 1 do
       begin
-        LHasErrors := True;
-        LAllErrors.AddRange(LSchemaResult.Errors);
+        LSchema := FSchemas[I];
+        LValidationContext.PushSchemaSegment(IntToStr(I));
+        try
+          LSchemaResult := ValidateAgainstSchema(AValue, LSchema, LValidationContext);
+        finally
+          LValidationContext.PopSchemaSegment;
+        end;
+
+        if not LSchemaResult.IsValid then
+        begin
+          LHasErrors := True;
+          LAllErrors.AddRange(LSchemaResult.Errors);
+        end;
       end;
+    finally
+      LValidationContext.PopSchemaSegment;
     end;
     
     if LHasErrors then

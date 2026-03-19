@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -58,7 +58,8 @@ begin
       'Value must be a number for maximum validation',
       'non-number',
       'number',
-      'maximum'
+      'maximum',
+      LValidationContext.GetFullSchemaPath + '/maximum'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -71,7 +72,8 @@ begin
       'Value must be a number for maximum validation',
       'non-number',
       'number',
-      'maximum'
+      'maximum',
+      LValidationContext.GetFullSchemaPath + '/maximum'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -86,7 +88,8 @@ begin
       Format('Value %g is greater than maximum %g', [LValue.AsFloat, FMaxValue]),
       FloatToStr(LValue.AsFloat),
       FloatToStr(FMaxValue),
-      'maximum'
+      'maximum',
+      LValidationContext.GetFullSchemaPath + '/maximum'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
   end;

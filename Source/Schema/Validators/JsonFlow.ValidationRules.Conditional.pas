@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -12,6 +12,7 @@
 }
 
 {$include ../../JsonFlow.inc}
+
 unit JsonFlow.ValidationRules.Conditional;
 
 interface
@@ -73,6 +74,12 @@ var
   LFor: Integer;
   LRequiredFields: TArray<string>;
 begin
+  if Assigned(AContext.Evaluator) then
+  begin
+    Result := AContext.Evaluator.Evaluate(AValue, ASchema, AContext);
+    Exit;
+  end;
+
   if not Assigned(ASchema) then
   begin
     Result := TValidationResult.Success(AContext.GetFullPath);
@@ -140,40 +147,51 @@ begin
       
       // For conditional validation, we need to check each property individually
       // and fail if any property doesn't exist or doesn't match its schema
-      for LPair in LPropertiesObj.Pairs do
-      begin
-        if not (AValue as IJSONObject).ContainsKey(LPair.Key) then
+      AContext.PushSchemaSegment('properties');
+      try
+        for LPair in LPropertiesObj.Pairs do
         begin
-          // Property doesn't exist - this should fail the condition
-          LErrors.Add(CreateValidationError(
-            AContext.GetFullPath,
-            Format('Property "%s" is required for conditional validation', [LPair.Key]),
-            'missing',
-            'present',
-            'properties'
-          ));
-        end
-        else
-        begin
-          // Property exists - validate it against its schema
-          var LPropertyValue := (AValue as IJSONObject).GetValue(LPair.Key);
-          var LPropertySchema := LPair.Value;
-          
-          // Handle const validation directly
-          if Supports(LPropertySchema, IJSONObject) and 
-             (LPropertySchema as IJSONObject).ContainsKey('const') then
-          begin
-            var LPropertyConstValue := ((LPropertySchema as IJSONObject).GetValue('const') as IJSONValue);
-            LRule := TConstRule.Create(LPropertyConstValue.AsString);
-            try
-              LResult := LRule.Validate(LPropertyValue, AContext);
-              if not LResult.IsValid then
-                LErrors.AddRange(LResult.Errors);
-            finally
-              LRule := nil;
+          AContext.PushSchemaSegment(LPair.Key);
+          try
+            if not (AValue as IJSONObject).ContainsKey(LPair.Key) then
+            begin
+              // Property doesn't exist - this should fail the condition
+              LErrors.Add(CreateValidationError(
+                AContext.GetFullPath,
+                Format('Property "%s" is required for conditional validation', [LPair.Key]),
+                'missing',
+                'present',
+                'properties',
+                AContext.GetFullSchemaPath
+              ));
+            end
+            else
+            begin
+              // Property exists - validate it against its schema
+              var LPropertyValue := (AValue as IJSONObject).GetValue(LPair.Key);
+              var LPropertySchema := LPair.Value;
+
+              // Handle const validation directly
+              if Supports(LPropertySchema, IJSONObject) and
+                 (LPropertySchema as IJSONObject).ContainsKey('const') then
+              begin
+                var LPropertyConstValue := ((LPropertySchema as IJSONObject).GetValue('const') as IJSONValue);
+                LRule := TConstRule.Create(LPropertyConstValue.AsString);
+                try
+                  LResult := LRule.Validate(LPropertyValue, AContext);
+                  if not LResult.IsValid then
+                    LErrors.AddRange(LResult.Errors);
+                finally
+                  LRule := nil;
+                end;
+              end;
             end;
+          finally
+            AContext.PopSchemaSegment;
           end;
         end;
+      finally
+        AContext.PopSchemaSegment;
       end;
     end;
     
@@ -258,14 +276,24 @@ begin
   LValidationContext := TValidationContext(AContext);
   
   // Avaliar a condição 'if'
-  LIfResult := ValidateAgainstSchema(AValue, FIfSchema, LValidationContext);
+  LValidationContext.PushSchemaSegment('if');
+  try
+    LIfResult := ValidateAgainstSchema(AValue, FIfSchema, LValidationContext);
+  finally
+    LValidationContext.PopSchemaSegment;
+  end;
   
   if LIfResult.IsValid then
   begin
     // Se 'if' é válido, aplicar 'then' se existir
     if Assigned(FThenSchema) then
     begin
-      LThenResult := ValidateAgainstSchema(AValue, FThenSchema, LValidationContext);
+      LValidationContext.PushSchemaSegment('then');
+      try
+        LThenResult := ValidateAgainstSchema(AValue, FThenSchema, LValidationContext);
+      finally
+        LValidationContext.PopSchemaSegment;
+      end;
       Result := LThenResult;
     end
     else
@@ -279,7 +307,12 @@ begin
     // Se 'if' é inválido, aplicar 'else' se existir
     if Assigned(FElseSchema) then
     begin
-      LElseResult := ValidateAgainstSchema(AValue, FElseSchema, LValidationContext);
+      LValidationContext.PushSchemaSegment('else');
+      try
+        LElseResult := ValidateAgainstSchema(AValue, FElseSchema, LValidationContext);
+      finally
+        LValidationContext.PopSchemaSegment;
+      end;
       Result := LElseResult;
     end
     else

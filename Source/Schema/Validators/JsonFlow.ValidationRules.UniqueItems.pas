@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -102,7 +102,8 @@ begin
       'Value must be an array for uniqueItems validation',
       'non-array',
       'array',
-      'uniqueItems'
+      'uniqueItems',
+      LValidationContext.GetFullSchemaPath + '/uniqueItems'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -130,11 +131,12 @@ begin
         begin
           LHasErrors := True;
           LError := CreateValidationError(
-            LValidationContext.GetFullPath + '[' + IntToStr(J) + ']',
+            LValidationContext.GetFullPath + '/' + IntToStr(J),
             Format('Duplicate item found at index %d (same as index %d)', [J, I]),
             ElementToString(LItem2),
             'unique value',
-            'uniqueItems'
+            'uniqueItems',
+            LValidationContext.GetFullSchemaPath + '/uniqueItems'
           );
           LAllErrors.Add(LError);
         end;

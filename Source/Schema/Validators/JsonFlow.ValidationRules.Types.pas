@@ -12,6 +12,7 @@
 }
 
 {$include ../../JsonFlow.inc}
+
 unit JsonFlow.ValidationRules.Types;
 
 interface
@@ -49,6 +50,7 @@ var
   LValue: IJSONValue;
   LError: TValidationError;
   LValidationContext: TValidationContext;
+  LExpected: string;
 begin
   LValidationContext := TValidationContext(AContext);
   
@@ -58,7 +60,9 @@ begin
     LValue := AValue as IJSONValue;
     if LValue.IsString then
       LActualType := 'string'
-    else if LValue.IsInteger or LValue.IsFloat then
+    else if LValue.IsInteger then
+      LActualType := 'integer'
+    else if LValue.IsFloat then
       LActualType := 'number'
     else if LValue.IsBoolean then
       LActualType := 'boolean'
@@ -74,16 +78,18 @@ begin
   else
     LActualType := 'unknown';
 
-  if LActualType = FExpectedType then
+  LExpected := AnsiLowerCase(FExpectedType);
+  if (LActualType = LExpected) or ((LExpected = 'number') and (LActualType = 'integer')) then
     Result := TValidationResult.Success(LValidationContext.GetFullPath)
   else
   begin
     LError := CreateValidationError(
       LValidationContext.GetFullPath,
-      Format('Expected type %s, found %s', [FExpectedType, LActualType]),
+      Format('Invalid type: expected %s, found %s', [LExpected, LActualType]),
       LActualType,
-      FExpectedType,
-      'type'
+      LExpected,
+      'type',
+      LValidationContext.GetFullSchemaPath + '/type'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
   end;

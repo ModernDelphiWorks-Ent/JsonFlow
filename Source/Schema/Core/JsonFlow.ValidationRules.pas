@@ -52,7 +52,8 @@ uses
   JsonFlow.ValidationRules.Contains,
   JsonFlow.ValidationRules.PatternProperties,
   JsonFlow.ValidationRules.PropertyNames,
-  JsonFlow.ValidationRules.Conditional;
+  JsonFlow.ValidationRules.Conditional,
+  JsonFlow.ValidationRules.Ref;
 
 type
   TBaseValidationRule = JsonFlow.ValidationRules.Base.TBaseValidationRule;
@@ -85,6 +86,7 @@ type
   TPatternPropertiesRule = JsonFlow.ValidationRules.PatternProperties.TPatternPropertiesRule;
   TPropertyNamesRule = JsonFlow.ValidationRules.PropertyNames.TPropertyNamesRule;
   TConditionalRule = JsonFlow.ValidationRules.Conditional.TConditionalRule;
+  TRefRule = JsonFlow.ValidationRules.Ref.TRefRule;
 
   // Factory para cria��o de regras
   TValidationRuleFactory = class

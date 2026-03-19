@@ -51,6 +51,12 @@ var
   LTypeValue: string;
   LTypeRule: IValidationRule;
 begin
+  if Assigned(AContext.Evaluator) then
+  begin
+    Result := AContext.Evaluator.Evaluate(AValue, ASchema, AContext);
+    Exit;
+  end;
+
   if not Supports(ASchema, IJSONObject, LSchemaObj) then
   begin
     Result := TValidationResult.Success(AContext.GetFullPath);
@@ -81,26 +87,32 @@ var
   LError: TValidationError;
 begin
   LValidationContext := TValidationContext(AContext);
+
+  LValidationContext.PushSchemaSegment('not');
+  try
+    // Validar contra o esquema
+    LSchemaResult := ValidateAgainstSchema(AValue, FSchema, LValidationContext);
   
-  // Validar contra o esquema
-  LSchemaResult := ValidateAgainstSchema(AValue, FSchema, LValidationContext);
-  
-  // Se o esquema é válido, então a regra 'not' falha
-  if LSchemaResult.IsValid then
-  begin
-    LError := CreateValidationError(
-      LValidationContext.GetFullPath,
-      'Value should not be valid against the schema in not',
-      'valid',
-      'invalid',
-      'not'
-    );
-    Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
-  end
-  else
-  begin
-    // Se o esquema é inválido, então a regra 'not' é bem-sucedida
-    Result := TValidationResult.Success(LValidationContext.GetFullPath);
+    // Se o esquema é válido, então a regra 'not' falha
+    if LSchemaResult.IsValid then
+    begin
+      LError := CreateValidationError(
+        LValidationContext.GetFullPath,
+        'Value should not be valid against the schema in not',
+        'valid',
+        'invalid',
+        'not',
+        LValidationContext.GetFullSchemaPath
+      );
+      Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
+    end
+    else
+    begin
+      // Se o esquema é inválido, então a regra 'not' é bem-sucedida
+      Result := TValidationResult.Success(LValidationContext.GetFullPath);
+    end;
+  finally
+    LValidationContext.PopSchemaSegment;
   end;
 end;
 

@@ -28,6 +28,8 @@ uses
   JsonFlow.Arrays;
 
 type
+  EJsonFlowParseError = class(Exception);
+
   TJSONReader = class(TInterfacedObject, IJSONReader)
   private
     FLogProc: TProc<String>;
@@ -170,7 +172,7 @@ begin
       begin
         Inc(AIndex);
         if AIndex >= ALength then
-          raise EInvalidOperation.Create('Unexpected end of JSON string');
+          raise EJsonFlowParseError.Create('Unexpected end of JSON string');
         case AJson[AIndex] of
           '"', '\', '/': LBuilder.Append(AJson[AIndex]);
           'b': LBuilder.Append(#8);
@@ -183,11 +185,11 @@ begin
                  if AIndex + 3 < ALength then
                    LBuilder.Append(Char(StrToInt('$'+Copy(AJson+AIndex, 0, 4))))
                  else
-                   raise EInvalidOperation.Create('Invalid unicode escape');
+                   raise EJsonFlowParseError.Create('Invalid unicode escape');
                  Inc(AIndex, 3);
                end;
           else
-            raise EInvalidOperation.Create('Invalid escape sequence');
+            raise EJsonFlowParseError.Create('Invalid escape sequence');
         end;
       end
       else
@@ -195,7 +197,7 @@ begin
       Inc(AIndex);
     end;
     if AIndex >= ALength then
-      raise EInvalidOperation.Create('Unterminated string');
+      raise EJsonFlowParseError.Create('Unterminated string');
     Inc(AIndex); // Pula a aspa final
     Result := LBuilder.ToString;
   finally
@@ -219,7 +221,7 @@ begin
       if AChar = '\' then
       begin
         if not _ReadChar(AStream, AChar) then
-          raise EInvalidOperation.Create('Unexpected end of JSON string');
+          raise EJsonFlowParseError.Create('Unexpected end of JSON string');
         case AChar of
           '"', '\', '/': LBuilder.Append(AChar);
           'b': LBuilder.Append(#8);
@@ -232,19 +234,19 @@ begin
                  for var i := 1 to 4 do
                  begin
                    if not _ReadChar(AStream, AChar) then
-                     raise EInvalidOperation.Create('Invalid unicode escape');
+                     raise EJsonFlowParseError.Create('Invalid unicode escape');
                    LUnicode := LUnicode + AChar;
                  end;
                  LBuilder.Append(Char(StrToInt('$'+LUnicode)));
                end;
           else
-            raise EInvalidOperation.Create('Invalid escape sequence');
+            raise EJsonFlowParseError.Create('Invalid escape sequence');
         end;
       end
       else
         LBuilder.Append(AChar);
     end;
-    raise EInvalidOperation.Create('Unterminated string');
+    raise EJsonFlowParseError.Create('Unterminated string');
   finally
     LBuilder.Free;
   end;
@@ -325,7 +327,7 @@ var
 begin
   _SkipWhitespace(AJson, AIndex, ALength);
   if AIndex >= ALength then
-    raise EInvalidOperation.Create('Unexpected end of JSON');
+    raise EJsonFlowParseError.Create('Unexpected end of JSON');
 
   LChar := AJson[AIndex];
   case LChar of
@@ -347,7 +349,7 @@ begin
              Inc(AIndex, 4);
            end
            else
-             raise EInvalidOperation.Create('Invalid JSON value');
+             raise EJsonFlowParseError.Create('Invalid JSON value');
          end;
     'f': begin
            if Copy(AJson + AIndex, 1, 5) = 'false' then
@@ -357,7 +359,7 @@ begin
              Inc(AIndex, 5);
            end
            else
-             raise EInvalidOperation.Create('Invalid JSON value');
+             raise EJsonFlowParseError.Create('Invalid JSON value');
          end;
     'n': begin
            if Copy(AJson + AIndex, 1, 4) = 'null' then
@@ -367,11 +369,11 @@ begin
              Inc(AIndex, 4);
            end
            else
-             raise EInvalidOperation.Create('Invalid JSON value');
+             raise EJsonFlowParseError.Create('Invalid JSON value');
          end;
     '0'..'9', '-': Result := _ParseNumber(AJson, AIndex, ALength);
     else
-      raise EInvalidOperation.Create('Unexpected character: ' + LChar);
+      raise EJsonFlowParseError.Create('Unexpected character: ' + LChar);
   end;
 end;
 
@@ -407,23 +409,23 @@ begin
            LValue := TJSONValueBoolean.Create(True);
            Result := LValue;
            for var i := 1 to 3 do if not _ReadChar(AStream, AChar) then
-             raise EInvalidOperation.Create('Incomplete true value');
+             raise EJsonFlowParseError.Create('Incomplete true value');
          end;
     'f': begin
            LValue := TJSONValueBoolean.Create(False);
            Result := LValue;
            for var i := 1 to 4 do if not _ReadChar(AStream, AChar) then
-             raise EInvalidOperation.Create('Incomplete false value');
+             raise EJsonFlowParseError.Create('Incomplete false value');
          end;
     'n': begin
            LValue := TJSONValueNull.Create;
            Result := LValue;
            for var i := 1 to 3 do if not _ReadChar(AStream, AChar) then
-             raise EInvalidOperation.Create('Incomplete null value');
+             raise EJsonFlowParseError.Create('Incomplete null value');
          end;
     '0'..'9', '-': Result := _ParseNumber(AChar, AStream);
     else
-      raise EInvalidOperation.Create('Unexpected character: ' + AChar);
+      raise EJsonFlowParseError.Create('Unexpected character: ' + AChar);
   end;
 end;
 
@@ -445,26 +447,26 @@ begin
   begin
     _SkipWhitespace(AJson, AIndex, ALength);
     if AJson[AIndex] <> '"' then
-      raise EInvalidOperation.Create('Expected string key');
+      raise EJsonFlowParseError.Create('Expected string key');
     LKey := _ParseString(AJson, AIndex, ALength);
 
     _SkipWhitespace(AJson, AIndex, ALength);
     if (AIndex >= ALength) or (AJson[AIndex] <> ':') then
-      raise EInvalidOperation.Create('Expected ":" after key');
+      raise EJsonFlowParseError.Create('Expected ":" after key');
     Inc(AIndex); // Pula ':'
 
     Result.Add(LKey, _ParseValue(AJson, AIndex, ALength));
 
     _SkipWhitespace(AJson, AIndex, ALength);
     if AIndex >= ALength then
-      raise EInvalidOperation.Create('Unterminated object');
+      raise EJsonFlowParseError.Create('Unterminated object');
     if AJson[AIndex] = '}' then
     begin
       Inc(AIndex);
       Break;
     end;
     if AJson[AIndex] <> ',' then
-      raise EInvalidOperation.Create('Expected "," or "}"');
+      raise EJsonFlowParseError.Create('Expected "," or "}"');
     Inc(AIndex); // Pula ','
   end;
 end;
@@ -475,7 +477,7 @@ var
 begin
   Result := TJSONObject.Create;
   if not _ReadChar(AStream, AChar) then
-    raise EInvalidOperation.Create('Unterminated object');
+    raise EJsonFlowParseError.Create('Unterminated object');
   _SkipWhitespace(AChar, AStream);
 
   if AChar = '}' then Exit;
@@ -483,22 +485,22 @@ begin
   while True do
   begin
     if AChar <> '"' then
-      raise EInvalidOperation.Create('Expected string key');
+      raise EJsonFlowParseError.Create('Expected string key');
     LKey := _ParseString(AChar, AStream);
     if not _ReadChar(AStream, AChar) then
-      raise EInvalidOperation.Create('Expected ":" after key');
+      raise EJsonFlowParseError.Create('Expected ":" after key');
     _SkipWhitespace(AChar, AStream);
     if AChar <> ':' then
-      raise EInvalidOperation.Create('Expected ":" after key');
+      raise EJsonFlowParseError.Create('Expected ":" after key');
     if not _ReadChar(AStream, AChar) then
-      raise EInvalidOperation.Create('Unexpected end of JSON');
+      raise EJsonFlowParseError.Create('Unexpected end of JSON');
     Result.Add(LKey, _ParseValue(AChar, AStream));
     _SkipWhitespace(AChar, AStream);
     if AChar = '}' then Break;
     if AChar <> ',' then
-      raise EInvalidOperation.Create('Expected "," or "}"');
+      raise EJsonFlowParseError.Create('Expected "," or "}"');
     if not _ReadChar(AStream, AChar) then
-      raise EInvalidOperation.Create('Unterminated object');
+      raise EJsonFlowParseError.Create('Unterminated object');
   end;
   if not _ReadChar(AStream, AChar) then AChar := #0;
 end;
@@ -521,14 +523,14 @@ begin
 
     _SkipWhitespace(AJson, AIndex, ALength);
     if AIndex >= ALength then
-      raise EInvalidOperation.Create('Unterminated array');
+      raise EJsonFlowParseError.Create('Unterminated array');
     if AJson[AIndex] = ']' then
     begin
       Inc(AIndex);
       Break;
     end;
     if AJson[AIndex] <> ',' then
-      raise EInvalidOperation.Create('Expected "," or "]"');
+      raise EJsonFlowParseError.Create('Expected "," or "]"');
     Inc(AIndex); // Pula ','
   end;
 end;
@@ -537,7 +539,7 @@ function TJSONReader._ParseArray(var AChar: Char; AStream: TStream): IJSONArray;
 begin
   Result := TJSONArray.Create;
   if not _ReadChar(AStream, AChar) then
-    raise EInvalidOperation.Create('Unterminated array');
+    raise EJsonFlowParseError.Create('Unterminated array');
   _SkipWhitespace(AChar, AStream);
 
   if AChar = ']' then Exit;
@@ -548,9 +550,9 @@ begin
     _SkipWhitespace(AChar, AStream);
     if AChar = ']' then Break;
     if AChar <> ',' then
-      raise EInvalidOperation.Create('Expected "," or "]"');
+      raise EJsonFlowParseError.Create('Expected "," or "]"');
     if not _ReadChar(AStream, AChar) then
-      raise EInvalidOperation.Create('Unterminated array');
+      raise EJsonFlowParseError.Create('Unterminated array');
   end;
   if not _ReadChar(AStream, AChar) then AChar := #0;
 end;
@@ -562,12 +564,12 @@ begin
   Writeln('Parsing JSON: "', AJson, '"');
   Writeln('Length of JSON: ', Length(AJson));
   if AJson = '' then
-    raise EInvalidOperation.Create('Empty JSON string');
+    raise EJsonFlowParseError.Create('Empty JSON string');
   LIndex := 0;
   Result := _ParseValue(PChar(AJson), LIndex, Length(AJson));
   _SkipWhitespace(PChar(AJson), LIndex, Length(AJson));
   if LIndex < Length(AJson) then
-    raise EInvalidOperation.Create('Extra characters after JSON');
+    raise EJsonFlowParseError.Create('Extra characters after JSON');
 end;
 
 function TJSONReader.ReadFromStream(AStream: TStream): IJSONElement;
@@ -578,7 +580,7 @@ begin
   FBufferPos := 0;
   FBufferEnd := 0;
   if not _ReadChar(AStream, LChar) then
-    raise EInvalidOperation.Create('Empty stream');
+    raise EJsonFlowParseError.Create('Empty stream');
   _SkipWhitespace(LChar, AStream);
   Result := _ParseValue(LChar, AStream);
 end;

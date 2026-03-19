@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<test-results name="D:\Ecossistema-Delphi\JsonFlow\Tests\Schema\JsonFlow.Schema.Tests.exe" total="97" errors="0" failures="0" ignored="0" inconclusive="0" not-run="0" skipped="0" invalid="0" date="2026-03-19" time="1.439">
+  <culture-info current-culture="en" current-uiculture="en" />
+  <test-suite type="Assembly" name="JsonFlow.Schema.Tests.exe" executed="true" result="Success" success="True" time="1.439" asserts="0">
+    <results>
+        <test-suite type="Namespace" name="JsonFlow" executed="true" result="Success" success="True" time="1.438" asserts="0" >
+          <results>
+              <test-suite type="Fixture" name="TSchemaArrayContainsTests" executed="True" result="Success" success="True" time="0.001" >
+                <results>
+                  <test-case name="TestContains_SimpleArray_ShouldPass" executed="True" result="Success" success="True" time="0.001" asserts="0" />
+                  <test-case name="TestContains_SimpleArray_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestContains_Deep_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                </results>
+              </test-suite>
+              <test-suite type="Fixture" name="TSchemaArrayLimitsAndUniqueTests" executed="True" result="Success" success="True" time="0.002" >
+                <results>
+                  <test-case name="TestMinItems_Deep_ObjectProperty_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestMaxItems_Deep_ObjectProperty_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestUniqueItems_Primitives_ShouldPass" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestUniqueItems_Primitives_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestUniqueItems_Deep_ObjectProperty_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                </results>
+              </test-suite>
+              <test-suite type="Fixture" name="TSchemaArrayTupleItemsTests" executed="True" result="Success" success="True" time="0.002" >
+                <results>
+                  <test-case name="TestItems_Tuple_ByIndex_ShouldPass" executed="True" result="Success" success="True" time="0.001" asserts="0" />
+                  <test-case name="TestItems_Tuple_ByIndex_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestAdditionalItems_False_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestAdditionalItems_Schema_ShouldValidate" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                </results>
+              </test-suite>
+              <test-suite type="Fixture" name="TSchemaCombinatorsAndConditionalsTests" executed="True" result="Success" success="True" time="0.003" >
+                <results>
+                  <test-case name="TestAnyOf_NoMatches_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestOneOf_MultipleMatches_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestAllOf_OneFails_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestNot_WhenMatches_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestIfThenElse_ThenBranch_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestIfThenElse_ElseBranch_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestIfThenElse_BothBranches_ShouldPass" executed="True" result="Success" success="True" time="0.001" asserts="0" />
+                </results>
+              </test-suite>
+              <test-suite type="Fixture" name="TSchemaDeepValidationBaselineTests" executed="True" result="Success" success="True" time="0.002" >
+                <results>
+                  <test-case name="TestValidate_Deep_MinLength_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_Deep_Required_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_SameKey_In_Different_Branches_ShouldFail" executed="True" result="Success" success="True" time="0.001" asserts="0" />
+                </results>
+              </test-suite>
+              <test-suite type="Fixture" name="TJSONSchemaNavigatorTests" executed="True" result="Success" success="True" time="0.008" >
+                <results>
+                  <test-case name="TestGetValue_SimplePath" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestGetValue_NestedPath" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestGetValue_ArrayIndex" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestGetObject_ValidPath" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestGetObject_InvalidPath" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestGetArray_ValidPath" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestGetArray_InvalidPath" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestResolveRef_LocalDefs" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestResolveRef_LocalAnchor" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestResolveRef_ExternalFile" executed="True" result="Success" success="True" time="0.002" asserts="0" />
+                  <test-case name="TestGetValue_EscapeCharacters" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestGetValue_InvalidPath" executed="True" result="Success" success="True" time="0.001" asserts="0" />
+                </results>
+              </test-suite>
+              <test-suite type="Fixture" name="TSchemaObjectKeywordsDeepTests" executed="True" result="Success" success="True" time="0.002" >
+                <results>
+                  <test-case name="TestAdditionalProperties_Schema_MinLength_ShouldFail" executed="True" result="Success" success="True" time="0.001" asserts="0" />
+                  <test-case name="TestPatternProperties_Schema_MinLength_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestPropertyNames_Schema_MinLength_ShouldFail" executed="True" result="Success" success="True" time="0.001" asserts="0" />
+                </results>
+              </test-suite>
+              <test-suite type="Fixture" name="TObjectKeywordsLimitsTests" executed="True" result="Success" success="True" time="0.001" >
+                <results>
+                  <test-case name="TestAdditionalProperties_False_AllowsPatternProperties" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestMinProperties_Deep_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestMaxProperties_Deep_ShouldFail" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                </results>
+              </test-suite>
+              <test-suite type="Fixture" name="TJSONSchemaReaderTests" executed="True" result="Success" success="True" time="1.389" >
+                <results>
+                  <test-case name="TestLoadFromString_ValidSchema" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestLoadFromString_InvalidJSON" executed="True" result="Success" success="True" time="1.381" asserts="0" />
+                  <test-case name="TestLoadFromFile_ValidFile" executed="True" result="Success" success="True" time="0.003" asserts="0" />
+                  <test-case name="TestValidate_ValidInstance" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_InvalidInstance" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestDetectVersion_Draft7" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestDetectVersion_Draft201909" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestDetectVersion_Unknown" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidateWithSchemaString" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestGetErrors" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                </results>
+              </test-suite>
+              <test-suite type="Fixture" name="TSchemaRefResolutionTests" executed="True" result="Success" success="True" time="0.005" >
+                <results>
+                  <test-case name="TestLocalDefs_Ref_Deep" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestFileRef_WithRelativePath" executed="True" result="Success" success="True" time="0.003" asserts="0" />
+                  <test-case name="TestCircularRef_Detected" executed="True" result="Success" success="True" time="0.002" asserts="0" />
+                </results>
+              </test-suite>
+              <test-suite type="Fixture" name="TSchemaPathTests" executed="True" result="Success" success="True" time="0.001" >
+                <results>
+                  <test-case name="TestSchemaPath_NestedMinLength" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                </results>
+              </test-suite>
+              <test-suite type="Fixture" name="TSchemaPathCombinatorsTests" executed="True" result="Success" success="True" time="0.001" >
+                <results>
+                  <test-case name="TestSchemaPath_AnyOf_Index" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestSchemaPath_Required_Deep" executed="True" result="Success" success="True" time="0.001" asserts="0" />
+                </results>
+              </test-suite>
+              <test-suite type="Fixture" name="TJSONSchemaValidatorTests" executed="True" result="Success" success="True" time="0.019" >
+                <results>
+                  <test-case name="TestValidate_SimpleType" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_RequiredField" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_StringType" executed="True" result="Success" success="True" time="0.002" asserts="0" />
+                  <test-case name="TestValidate_NumberType" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_ObjectType" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_ArrayType" executed="True" result="Success" success="True" time="0.001" asserts="0" />
+                  <test-case name="TestValidate_LocalDefs" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_LocalAnchor" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_DeepNestedProperties" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_LocalDefs_Permissive_AllowsUnknownAndMissing" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_AllOf" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_AnyOf" executed="True" result="Success" success="True" time="0.002" asserts="0" />
+                  <test-case name="TestValidate_OneOf" executed="True" result="Success" success="True" time="0.001" asserts="0" />
+                  <test-case name="TestValidate_Not" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_MinItems" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_MaxItems" executed="True" result="Success" success="True" time="0.002" asserts="0" />
+                  <test-case name="TestValidate_Contains" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_UniqueItems" executed="True" result="Success" success="True" time="0.003" asserts="0" />
+                  <test-case name="TestValidate_Format" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_Pattern" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_PatternProperties" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_PropertyNames" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_AdditionalProperties" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_MinProperties" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_MaxProperties" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_ExclusiveMinimum" executed="True" result="Success" success="True" time="0.001" asserts="0" />
+                  <test-case name="TestValidate_ExclusiveMaximum" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_MultipleOf" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_IfThenElse" executed="True" result="Success" success="True" time="0.002" asserts="0" />
+                </results>
+              </test-suite>
+              <test-suite type="Fixture" name="TJSONSchemaValidatorNewTests" executed="True" result="Success" success="True" time="0.004" >
+                <results>
+                  <test-case name="TestValidate_SimpleString" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_SimpleNumber" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_SimpleBoolean" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_SimpleObject" executed="True" result="Success" success="True" time="0.001" asserts="0" />
+                  <test-case name="TestValidate_SimpleArray" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_RequiredField" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_RequiredField_Invalid" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_MinLength" executed="True" result="Success" success="True" time="0.001" asserts="0" />
+                  <test-case name="TestValidate_MinLength_Invalid" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_MaxLength" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_MinimumNumber" executed="True" result="Success" success="True" time="0.000" asserts="0" />
+                  <test-case name="TestValidate_MaximumNumber" executed="True" result="Success" success="True" time="0.001" asserts="0" />
+                </results>
+              </test-suite>
+          </results>
+        </test-suite>
+    </results>
+  </test-suite>
+</test-results>

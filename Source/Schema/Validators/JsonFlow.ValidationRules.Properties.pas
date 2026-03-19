@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -12,6 +12,7 @@
 }
 
 {$include ../../JsonFlow.inc}
+
 unit JsonFlow.ValidationRules.Properties;
 
 interface
@@ -98,7 +99,8 @@ begin
       'Value must be an object for properties validation',
       'non-object',
       'object',
-      'properties'
+      'properties',
+      LValidationContext.GetFullSchemaPath + '/properties'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -119,6 +121,9 @@ begin
         // Criar contexto para a propriedade
         LValidationContext.PushProperty(LPropertyName);
         try
+          LValidationContext.PushSchemaSegment('properties');
+          LValidationContext.PushSchemaSegment(LPropertyName);
+          try
           // Validar usando o esquema da propriedade
           LPropertyResult := ValidatePropertySchema(LPropertyValue, LPropertySchema, LValidationContext);
           
@@ -126,6 +131,10 @@ begin
           begin
             LHasErrors := True;
             LAllErrors.AddRange(LPropertyResult.Errors);
+          end;
+          finally
+            LValidationContext.PopSchemaSegment;
+            LValidationContext.PopSchemaSegment;
           end;
         finally
           LValidationContext.PopProperty;
@@ -149,6 +158,12 @@ var
   LTypeRule: IValidationRule;
   LError: TValidationError;
 begin
+  if Assigned(AContext.Evaluator) then
+  begin
+    Result := AContext.Evaluator.Evaluate(AValue, ASchema, AContext);
+    Exit;
+  end;
+
   // Verificar se o esquema é um objeto
   if not Supports(ASchema, IJSONObject, LSchemaObj) then
   begin

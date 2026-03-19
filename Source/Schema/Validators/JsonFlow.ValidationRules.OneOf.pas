@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -12,6 +12,7 @@
 }
 
 {$include ../../JsonFlow.inc}
+
 unit JsonFlow.ValidationRules.OneOf;
 
 interface
@@ -69,6 +70,12 @@ var
   I: Integer;
   LRequiredFields: TArray<string>;
 begin
+  if Assigned(AContext.Evaluator) then
+  begin
+    Result := AContext.Evaluator.Evaluate(AValue, ASchema, AContext);
+    Exit;
+  end;
+
   if not Assigned(ASchema) then
   begin
     Result := TValidationResult.Success(AContext.GetFullPath);
@@ -230,19 +237,34 @@ var
   LSchemaResult: TValidationResult;
   I: Integer;
   LError: TValidationError;
+  LAllErrors: TList<TValidationError>;
 begin
   LValidationContext := TValidationContext(AContext);
   LValidSchemaCount := 0;
+  LAllErrors := TList<TValidationError>.Create;
+  try
+    LValidationContext.PushSchemaSegment('oneOf');
+    try
   
   // Contar quantos esquemas são válidos
   for I := 0 to Length(FSchemas) - 1 do
   begin
     LSchema := FSchemas[I];
-    LSchemaResult := ValidateAgainstSchema(AValue, LSchema, LValidationContext);
+    LValidationContext.PushSchemaSegment(IntToStr(I));
+    try
+      LSchemaResult := ValidateAgainstSchema(AValue, LSchema, LValidationContext);
+    finally
+      LValidationContext.PopSchemaSegment;
+    end;
     
     if LSchemaResult.IsValid then
       Inc(LValidSchemaCount);
+    if not LSchemaResult.IsValid then
+      LAllErrors.AddRange(LSchemaResult.Errors);
   end;
+    finally
+      LValidationContext.PopSchemaSegment;
+    end;
   
   if LValidSchemaCount = 1 then
     Result := TValidationResult.Success(LValidationContext.GetFullPath)
@@ -253,9 +275,17 @@ begin
       'Value does not match any of the schemas in oneOf',
       'invalid',
       'valid against exactly one schema',
-      'oneOf'
+      'oneOf',
+      LValidationContext.GetFullSchemaPath + '/oneOf'
     );
-    Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
+    var LErrors := TList<TValidationError>.Create;
+    try
+      LErrors.Add(LError);
+      LErrors.AddRange(LAllErrors);
+      Result := TValidationResult.Failure(LValidationContext.GetFullPath, LErrors.ToArray);
+    finally
+      LErrors.Free;
+    end;
   end
   else
   begin
@@ -264,9 +294,13 @@ begin
       Format('Value matches %d schemas in oneOf, but should match exactly one', [LValidSchemaCount]),
       IntToStr(LValidSchemaCount),
       '1',
-      'oneOf'
+      'oneOf',
+      LValidationContext.GetFullSchemaPath + '/oneOf'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
+  end;
+  finally
+    LAllErrors.Free;
   end;
 end;
 

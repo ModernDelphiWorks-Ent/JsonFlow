@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -12,6 +12,7 @@
 }
 
 {$include ../../JsonFlow.inc}
+
 unit JsonFlow.ValidationRules.Contains;
 
 interface
@@ -51,6 +52,12 @@ var
   LTypeValue: string;
   LTypeRule: IValidationRule;
 begin
+  if Assigned(AContext.Evaluator) then
+  begin
+    Result := AContext.Evaluator.Evaluate(AItem, ASchema, AContext);
+    Exit;
+  end;
+
   if not Supports(ASchema, IJSONObject, LSchemaObj) then
   begin
     Result := TValidationResult.Success(AContext.GetFullPath);
@@ -93,7 +100,8 @@ begin
       'Value must be an array for contains validation',
       'non-array',
       'array',
-      'contains'
+      'contains',
+      LValidationContext.GetFullSchemaPath + '/contains'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -101,23 +109,28 @@ begin
   
   LHasValidItem := False;
   
-  // Verificar se pelo menos um item é válido contra o esquema
-  for I := 0 to LArray.Count - 1 do
-  begin
-    LItem := LArray.GetItem(I);
-    
-    LValidationContext.PushArrayIndex(I);
-    try
-      LItemResult := ValidateItemAgainstSchema(LItem, FSchema, LValidationContext);
-      
-      if LItemResult.IsValid then
-      begin
-        LHasValidItem := True;
-        Break; // Encontrou um item válido, pode parar
+  LValidationContext.PushSchemaSegment('contains');
+  try
+    // Verificar se pelo menos um item é válido contra o esquema
+    for I := 0 to LArray.Count - 1 do
+    begin
+      LItem := LArray.GetItem(I);
+
+      LValidationContext.PushArrayIndex(I);
+      try
+        LItemResult := ValidateItemAgainstSchema(LItem, FSchema, LValidationContext);
+
+        if LItemResult.IsValid then
+        begin
+          LHasValidItem := True;
+          Break; // Encontrou um item válido, pode parar
+        end;
+      finally
+        LValidationContext.PopArrayIndex;
       end;
-    finally
-      LValidationContext.PopArrayIndex;
     end;
+  finally
+    LValidationContext.PopSchemaSegment;
   end;
   
   if LHasValidItem then
@@ -129,7 +142,8 @@ begin
       'Array does not contain any item that matches the schema',
       'no matching items',
       'at least one matching item',
-      'contains'
+      'contains',
+      LValidationContext.GetFullSchemaPath + '/contains'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
   end;

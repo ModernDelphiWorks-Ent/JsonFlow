@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -89,7 +89,8 @@ begin
       'Value must be a string for format validation',
       'non-string',
       'string',
-      'format'
+      'format',
+      LValidationContext.GetFullSchemaPath + '/format'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -102,7 +103,8 @@ begin
       'Value must be a string for format validation',
       'non-string',
       'string',
-      'format'
+      'format',
+      LValidationContext.GetFullSchemaPath + '/format'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -120,7 +122,8 @@ begin
       GetErrorMessageFromRegistry(LValue.AsString),
       LValue.AsString,
       FFormat,
-      'format'
+      'format',
+      LValidationContext.GetFullSchemaPath + '/format'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
   end;

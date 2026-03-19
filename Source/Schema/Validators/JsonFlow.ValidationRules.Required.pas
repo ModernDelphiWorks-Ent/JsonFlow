@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -61,7 +61,7 @@ begin
       'non-object',
       'object',
       'required',
-      LValidationContext.GetFullPath + '/required'
+      LValidationContext.GetFullSchemaPath + '/required'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -90,7 +90,7 @@ begin
           'missing',
           'present',
           'required',
-          LValidationContext.GetFullPath + '/required'
+          LValidationContext.GetFullSchemaPath + '/required'
         );
       end;
       Result := TValidationResult.Failure(LValidationContext.GetFullPath, LErrors);

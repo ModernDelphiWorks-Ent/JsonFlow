@@ -169,17 +169,27 @@ var
   LReader: TJSONReader;
   LFullPath: String;
   LJsonContent: String;
+  LBaseDir: String;
+  LCacheKey: String;
 begin
-  if FExternalSchemas.TryGetValue(AUri, Result) then
-    Exit;
-
   if AUri.StartsWith('http://') or AUri.StartsWith('https://') then
     raise Exception.Create('External schema loading via HTTP not implemented yet: ' + AUri);
 
   if (ABasePath <> '') and TFile.Exists(ABasePath) then
-    LFullPath := ABasePath
+    LBaseDir := TPath.GetDirectoryName(ABasePath)
+  else if (ABasePath <> '') and TDirectory.Exists(ABasePath) then
+    LBaseDir := ABasePath
   else
-    LFullPath := TPath.Combine(TPath.GetDirectoryName(ABasePath), AUri);
+    LBaseDir := '';
+
+  if (LBaseDir = '') then
+    LFullPath := AUri
+  else
+    LFullPath := TPath.Combine(LBaseDir, AUri);
+
+  LCacheKey := TPath.GetFullPath(LFullPath);
+  if FExternalSchemas.TryGetValue(LCacheKey, Result) then
+    Exit;
 
   if not TFile.Exists(LFullPath) then
     Exit(nil);
@@ -189,7 +199,7 @@ begin
   try
     try
       Result := LReader.Read(LJsonContent);
-      FExternalSchemas.Add(AUri, Result);
+      FExternalSchemas.Add(LCacheKey, Result);
     except
       on E: Exception do
       begin

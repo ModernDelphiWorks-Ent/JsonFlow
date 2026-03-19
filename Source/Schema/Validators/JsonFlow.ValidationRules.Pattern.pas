@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -57,7 +57,8 @@ begin
       'Value must be a string for pattern validation',
       'non-string',
       'string',
-      'pattern'
+      'pattern',
+      LValidationContext.GetFullSchemaPath + '/pattern'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -70,7 +71,8 @@ begin
       'Value must be a string for pattern validation',
       'non-string',
       'string',
-      'pattern'
+      'pattern',
+      LValidationContext.GetFullSchemaPath + '/pattern'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -87,7 +89,8 @@ begin
         Format('String "%s" does not match pattern "%s"', [LValue.AsString, FPattern]),
         LValue.AsString,
         FPattern,
-        'pattern'
+        'pattern',
+        LValidationContext.GetFullSchemaPath + '/pattern'
       );
       Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     end;
@@ -99,7 +102,8 @@ begin
         Format('Invalid regex pattern "%s": %s', [FPattern, E.Message]),
         FPattern,
         'valid regex',
-        'pattern'
+        'pattern',
+        LValidationContext.GetFullSchemaPath + '/pattern'
       );
       Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     end;

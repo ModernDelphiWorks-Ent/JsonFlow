@@ -1,4 +1,4 @@
-﻿{
+{
   ------------------------------------------------------------------------------
   JsonFlow
   Fluent and expressive JSON manipulation API for Delphi.
@@ -57,7 +57,8 @@ begin
       'Value must be an object for minProperties validation',
       'non-object',
       'object',
-      'minProperties'
+      'minProperties',
+      LValidationContext.GetFullSchemaPath + '/minProperties'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
     Exit;
@@ -74,7 +75,8 @@ begin
       Format('Object has %d properties, minimum required is %d', [LPropertyCount, FMinProperties]),
       IntToStr(LPropertyCount),
       IntToStr(FMinProperties),
-      'minProperties'
+      'minProperties',
+      LValidationContext.GetFullSchemaPath + '/minProperties'
     );
     Result := TValidationResult.Failure(LValidationContext.GetFullPath, [LError]);
   end;
